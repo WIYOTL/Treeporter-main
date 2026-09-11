@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react'
 import type { ScreenId } from './types'
+
 import { GitHubClient } from './services/github'
 import { DemoClient } from './services/demo'
 import { loadToken } from './services/tokenStore'
-import { TOKEN_TYPE_LABEL, TOKEN_TYPE_BADGE } from './services/tokenType'
-import { addHistoryEntry, getHistory } from './services/history'
+import {
+  TOKEN_TYPE_LABEL,
+  TOKEN_TYPE_BADGE,
+} from './services/tokenType'
+import {
+  addHistoryEntry,
+  getHistory,
+} from './services/history'
 import type { HistoryEntry } from './services/history'
 import { getTargetPathError } from './services/fileTree'
 
@@ -24,6 +31,7 @@ import { ScreenSending } from './components/ScreenSending'
 import { ScreenResult } from './components/ScreenResult'
 import { AppFooter } from './components/AppFooter'
 import { CreditsModal } from './components/CreditsModal'
+import { HelpModal } from './components/HelpModal'
 
 const FLOW_SCREENS: ScreenId[] = [
   'dock',
@@ -49,37 +57,43 @@ function derivePullRequestTitle(
 
 export default function App() {
   const [screen, setScreen] = useState<ScreenId>('connect')
-  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>(
-    () => getHistory()
-  )
+  const [historyEntries, setHistoryEntries] = useState<
+    HistoryEntry[]
+  >(() => getHistory())
+
   const [prLoading, setPrLoading] = useState(false)
   const [prError, setPrError] = useState<string | null>(null)
   const [prUrl, setPrUrl] = useState<string | null>(null)
-  const [branchWasCreated, setBranchWasCreated] = useState(false)
+  const [branchWasCreated, setBranchWasCreated] =
+    useState(false)
+
   const [creditsOpen, setCreditsOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   const auth = useAuth(setScreen)
   const dock = useDock()
   const conflicts = useConflicts(auth.providerRef)
-  const resetDestinationConflicts = conflicts.resetConflicts
 
   const destination = useDestination(
     auth.providerRef,
-    resetDestinationConflicts
+    conflicts.resetConflicts
   )
 
   const transfer = useTransfer(auth.providerRef)
   const pwaUpdate = usePwaUpdate()
 
   useEffect(() => {
-    if (!creditsOpen) {
+    if (!creditsOpen && !helpOpen) {
       return
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setCreditsOpen(false)
+      if (event.key !== 'Escape') {
+        return
       }
+
+      setCreditsOpen(false)
+      setHelpOpen(false)
     }
 
     window.addEventListener('keydown', onKeyDown)
@@ -87,13 +101,20 @@ export default function App() {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [creditsOpen])
+  }, [creditsOpen, helpOpen])
 
   useEffect(() => {
-    if (pwaUpdate.updateReady && screen !== 'sending') {
+    if (
+      pwaUpdate.updateReady &&
+      screen !== 'sending'
+    ) {
       pwaUpdate.applyUpdateNow()
     }
-  }, [pwaUpdate.updateReady, screen])
+  }, [
+    pwaUpdate.updateReady,
+    pwaUpdate.applyUpdateNow,
+    screen,
+  ])
 
   async function goToDestination() {
     setScreen('destination')
@@ -191,8 +212,10 @@ export default function App() {
     }
 
     addHistoryEntry({
-      repoFullName: destination.destination.repo.fullName,
-      branchName: destination.destination.branch.name,
+      repoFullName:
+        destination.destination.repo.fullName,
+      branchName:
+        destination.destination.branch.name,
       filesSent: result.filesSent,
       commitUrl: result.commitUrl,
       demo: auth.demo,
@@ -250,6 +273,7 @@ export default function App() {
     destination.resetDestination()
     transfer.resetTransfer()
     conflicts.resetConflicts()
+
     setPrUrl(null)
     setPrError(null)
     setBranchWasCreated(false)
@@ -271,6 +295,7 @@ export default function App() {
     transfer.resetTransfer()
     conflicts.resetConflicts()
     destination.resetDestinationKeepingTarget()
+
     setPrUrl(null)
     setPrError(null)
     setBranchWasCreated(false)
@@ -295,11 +320,17 @@ export default function App() {
 
         <AppFooter
           onCredits={() => setCreditsOpen(true)}
+          onHelp={() => setHelpOpen(true)}
         />
 
         <CreditsModal
           open={creditsOpen}
           onClose={() => setCreditsOpen(false)}
+        />
+
+        <HelpModal
+          open={helpOpen}
+          onClose={() => setHelpOpen(false)}
         />
       </div>
     )
@@ -350,6 +381,7 @@ export default function App() {
               )}
 
               <button
+                type="button"
                 className="btn btn-ghost btn-sm"
                 onClick={handleDisconnect}
               >
@@ -401,7 +433,13 @@ export default function App() {
             loadingRepos={destination.loadingRepos}
             repositoryLoadError={null}
             loadingBranches={destination.loadingBranches}
-            emptyRepo={false}
+            emptyRepo={
+              Boolean(
+                destination.destination.repo &&
+                  destination.branches.length === 0 &&
+                  !destination.loadingBranches
+              )
+            }
             branchError={null}
             destination={destination.destination}
             onSelectRepo={destination.selectRepo}
@@ -466,11 +504,17 @@ export default function App() {
 
       <AppFooter
         onCredits={() => setCreditsOpen(true)}
+        onHelp={() => setHelpOpen(true)}
       />
 
       <CreditsModal
         open={creditsOpen}
         onClose={() => setCreditsOpen(false)}
+      />
+
+      <HelpModal
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
       />
     </div>
   )

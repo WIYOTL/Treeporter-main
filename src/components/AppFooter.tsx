@@ -1,8 +1,9 @@
 interface Props {
   onCredits: () => void
+  onHelp: () => void
 }
 
-export function AppFooter({ onCredits }: Props) {
+export function AppFooter({ onCredits, onHelp }: Props) {
   return (
     <footer className="app-footer">
       <div className="app-footer-meta">
@@ -10,13 +11,31 @@ export function AppFooter({ onCredits }: Props) {
         <span>Développé par Wiyotl</span>
         <span>© 2026 Wiyotl. Tous droits réservés.</span>
       </div>
+
       <nav className="app-footer-links" aria-label="Pied de page">
-        <button className="app-footer-link" onClick={onCredits}>Crédits</button>
-        <a className="app-footer-link" href="https://github.com/WIYOTL/Treeporter" target="_blank" rel="noreferrer">
-          GitHub
-        </a>
-        <a className="app-footer-link" href="https://github.com/WIYOTL/Treeporter#readme" target="_blank" rel="noreferrer">
+        <button
+          type="button"
+          className="app-footer-link"
+          onClick={onCredits}
+        >
+          Crédits
+        </button>
+
+        <button
+          type="button"
+          className="app-footer-link"
+          onClick={onHelp}
+        >
           Aide
+        </button>
+
+        <a
+          className="app-footer-link"
+          href="https://github.com/WIYOTL/Treeporter"
+          target="_blank"
+          rel="noreferrer"
+        >
+          GitHub
         </a>
       </nav>
     </footer>
