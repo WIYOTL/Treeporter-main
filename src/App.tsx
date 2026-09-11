@@ -6,6 +6,7 @@ import { loadToken } from './services/tokenStore'
 import { TOKEN_TYPE_LABEL, TOKEN_TYPE_BADGE } from './services/tokenType'
 import { addHistoryEntry, getHistory } from './services/history'
 import type { HistoryEntry } from './services/history'
+import { getTargetPathError } from './services/fileTree'
 
 import { useAuth } from './hooks/useAuth'
 import { useDock } from './hooks/useDock'
@@ -21,12 +22,11 @@ import { ScreenDestination } from './components/ScreenDestination'
 import { ScreenPreview } from './components/ScreenPreview'
 import { ScreenSending } from './components/ScreenSending'
 import { ScreenResult } from './components/ScreenResult'
+import { AppFooter } from './components/AppFooter'
+import { CreditsModal } from './components/CreditsModal'
 
 const FLOW_SCREENS: ScreenId[] = ['dock', 'destination', 'preview', 'sending']
 
-// Dérive un titre de PR propre à partir du message de commit : première ligne seulement
-// (un message de commit peut être multi-lignes), plafonnée en longueur, avec un repli
-// sensé si le message est vide ou ne contient que des espaces.
 function derivePullRequestTitle(commitMessage: string, branchName: string): string {
   const firstLine = commitMessage.split('\n')[0].trim()
   if (!firstLine) return `Fusionner ${branchName}`
@@ -40,6 +40,7 @@ export default function App() {
   const [prError, setPrError] = useState<string | null>(null)
   const [prUrl, setPrUrl] = useState<string | null>(null)
   const [branchWasCreated, setBranchWasCreated] = useState(false)
+  const [creditsOpen, setCreditsOpen] = useState(false)
 
   const auth = useAuth(setScreen)
   const dock = useDock()
@@ -48,9 +49,19 @@ export default function App() {
   const transfer = useTransfer(auth.providerRef)
   const pwaUpdate = usePwaUpdate()
 
-  // Une mise à jour de l'app peut être détectée à tout moment, mais ne doit jamais recharger
-  // la page pendant un envoi en cours (les fichiers en mémoire seraient perdus). On l'applique
-  // dès que l'écran n'est plus "sending".
+  useEffect(() => {
+    if (!creditsOpen) return
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setCreditsOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [creditsOpen])
+
   useEffect(() => {
     if (pwaUpdate.updateReady && screen !== 'sending') {
       pwaUpdate.applyUpdateNow()
@@ -63,49 +74,73 @@ export default function App() {
   }
 
   async function goToPreview() {
+    if (getTargetPathError(destination.destination.targetPath)) return
+
     setScreen('preview')
     await conflicts.checkConflicts(destination.destination, dock.files)
   }
 
   async function handleSend() {
+    if (
+      conflicts.conflictLoading ||
+      conflicts.conflictCheckError ||
+      conflicts.existingPaths === null
+    ) {
+      return
+    }
+
     setScreen('sending')
     setPrUrl(null)
     setPrError(null)
+
     const branchWasNew = destination.destination.branch?.isNew === true
+
     const res = await transfer.runCommit(
       destination.destination,
       dock.files,
       conflicts.conflictChoices,
       conflicts.existingPaths
     )
+
     if (res) {
       setScreen('result')
       setBranchWasCreated(branchWasNew)
-      // La branche existe désormais réellement sur GitHub : les envois suivants doivent
-      // la traiter comme existante, pas tenter de la recréer (voir markBranchCreated).
-      if (branchWasNew) destination.markBranchCreated()
+
+      if (branchWasNew) {
+        destination.markBranchCreated()
+      }
+
       recordHistory(res)
     }
   }
 
   async function handleSendRetry() {
     const branchWasNew = destination.destination.branch?.isNew === true
+
     const res = await transfer.handleRetry(
       destination.destination,
       dock.files,
       conflicts.conflictChoices,
       conflicts.existingPaths
     )
+
     if (res) {
       setScreen('result')
       setBranchWasCreated(branchWasNew)
-      if (branchWasNew) destination.markBranchCreated()
+
+      if (branchWasNew) {
+        destination.markBranchCreated()
+      }
+
       recordHistory(res)
     }
   }
 
   function recordHistory(res: { filesSent: number; commitUrl: string }) {
-    if (!destination.destination.repo || !destination.destination.branch) return
+    if (!destination.destination.repo || !destination.destination.branch) {
+      return
+    }
+
     addHistoryEntry({
       repoFullName: destination.destination.repo.fullName,
       branchName: destination.destination.branch.name,
@@ -113,29 +148,53 @@ export default function App() {
       commitUrl: res.commitUrl,
       demo: auth.demo,
     })
+
     setHistoryEntries(getHistory())
   }
 
   async function handleCreatePullRequest() {
-    if (!auth.providerRef.current || !destination.destination.repo || !destination.destination.branch) return
+    if (
+      !auth.providerRef.current ||
+      !destination.destination.repo ||
+      !destination.destination.branch
+    ) {
+      return
+    }
+
     setPrLoading(true)
     setPrError(null)
+
     try {
       const pr = await auth.providerRef.current.createPullRequest(
         destination.destination.repo,
         destination.destination.branch,
-        derivePullRequestTitle(destination.destination.commitMessage, destination.destination.branch.name)
+        derivePullRequestTitle(
+          destination.destination.commitMessage,
+          destination.destination.branch.name
+        )
       )
+
       setPrUrl(pr.url)
     } catch (err) {
-      setPrError(err instanceof Error ? err.message : 'Impossible de créer la Pull Request.')
+      setPrError(
+        err instanceof Error
+          ? err.message
+          : 'Impossible de créer la Pull Request.'
+      )
     } finally {
       setPrLoading(false)
     }
   }
 
   async function handleDisconnect() {
-    if (!window.confirm('Déconnecter ce compte GitHub ? Le token enregistré sur cet iPhone sera effacé.')) return
+    if (
+      !window.confirm(
+        'Déconnecter ce compte GitHub ? Le token enregistré sur cet iPhone sera effacé.'
+      )
+    ) {
+      return
+    }
+
     await auth.disconnectAuth()
     dock.resetDock()
     destination.resetDestination()
@@ -151,11 +210,12 @@ export default function App() {
     if (auth.demo) {
       auth.providerRef.current = new DemoClient()
     } else {
-      // Nouvelle instance = cache de blobs remis à zéro, pour éviter qu'il ne grossisse
-      // indéfiniment au fil des envois d'une même session.
       const stored = await loadToken()
-      if (stored) auth.providerRef.current = new GitHubClient(stored)
+      if (stored) {
+        auth.providerRef.current = new GitHubClient(stored)
+      }
     }
+
     dock.resetDock()
     transfer.resetTransfer()
     conflicts.resetConflicts()
@@ -171,9 +231,23 @@ export default function App() {
   if (auth.sessionLoading) {
     return (
       <div className="app-shell">
-        <div className="app-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          className="app-content"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <p className="p-dim">Reprise de la session…</p>
         </div>
+
+        <AppFooter onCredits={() => setCreditsOpen(true)} />
+
+        <CreditsModal
+          open={creditsOpen}
+          onClose={() => setCreditsOpen(false)}
+        />
       </div>
     )
   }
@@ -183,28 +257,48 @@ export default function App() {
       <div className="app-topbar">
         <div className="app-title-row">
           <div className="app-mark" />
+
           <div>
             <div className="app-title">Treeporter</div>
             <div className="app-subtitle" style={{ marginTop: 0 }}>
-              Transfert vers Github avec n'importe quel appareil
+              iPhone → GitHub
             </div>
           </div>
+
           {auth.demo && screen !== 'connect' && (
-            <span className="demo-badge" style={{ marginLeft: 'auto' }}>Démo</span>
+            <span className="demo-badge" style={{ marginLeft: 'auto' }}>
+              Démo
+            </span>
           )}
+
           {!auth.demo && screen !== 'connect' && (
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
+              style={{
+                marginLeft: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
               {auth.tokenType && (
-                <span className="mono-chip" title={TOKEN_TYPE_LABEL[auth.tokenType]}>
+                <span
+                  className="mono-chip"
+                  title={TOKEN_TYPE_LABEL[auth.tokenType]}
+                >
                   {TOKEN_TYPE_BADGE[auth.tokenType]}
                 </span>
               )}
-              <button className="btn btn-ghost btn-sm" onClick={handleDisconnect}>
+
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={handleDisconnect}
+              >
                 Déconnecter
               </button>
             </div>
           )}
         </div>
+
         {flowIndex >= 0 && <StepBar current={flowIndex} />}
       </div>
 
@@ -241,9 +335,13 @@ export default function App() {
             repos={destination.repos}
             branches={destination.branches}
             loadingRepos={destination.loadingRepos}
+            reposError={destination.reposError}
             loadingBranches={destination.loadingBranches}
+            emptyRepo={destination.emptyRepo}
+            branchError={destination.branchError}
             destination={destination.destination}
             onSelectRepo={destination.selectRepo}
+            onRetryRepos={destination.loadRepos}
             onChange={destination.updateDestination}
             onBack={() => setScreen('dock')}
             onContinue={goToPreview}
@@ -293,6 +391,13 @@ export default function App() {
           />
         )}
       </div>
+
+      <AppFooter onCredits={() => setCreditsOpen(true)} />
+
+      <CreditsModal
+        open={creditsOpen}
+        onClose={() => setCreditsOpen(false)}
+      />
     </div>
   )
 }

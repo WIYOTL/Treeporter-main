@@ -432,3 +432,25 @@ a.btn { text-decoration: none; box-sizing: border-box; }
   padding: 3px 8px;
   text-transform: uppercase;
 }
+
+.app-footer {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid #333;
+  text-align: center;
+}
+
+.app-footer-content {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
