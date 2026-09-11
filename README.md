@@ -1,3 +1,4 @@
+<img width="192" height="192" alt="icon-192" src="https://github.com/user-attachments/assets/ea745944-d66c-4704-87ea-ded9fbe4d2a0" />
 # Treeporter — zone de transfert iPhone → GitHub (V2.0.0)
 
 PWA mobile-first : ajoute des fichiers/dossiers depuis l'app **Fichiers** de l'iPhone (arborescence conservée)
