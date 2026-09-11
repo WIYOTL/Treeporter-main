@@ -349,7 +349,7 @@ export default function App() {
               className="app-subtitle"
               style={{ marginTop: 0 }}
             >
-              iPhone → GitHub
+              N'importe quel appareil → GitHub
             </div>
           </div>
 
