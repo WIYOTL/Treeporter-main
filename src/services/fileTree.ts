@@ -1,39 +1,133 @@
 import type { DockedFile } from '../types'
 
-// Motifs exclus par défaut de l'envoi (fichiers/dossiers techniques indésirables)
-const DEFAULT_IGNORE_PATTERNS: Array<{ test: (path: string) => boolean; reason: string }> = [
-  { test: (p) => p.split('/').includes('.git'), reason: 'dossier .git' },
-  { test: (p) => p.split('/').includes('node_modules'), reason: 'dossier node_modules' },
-  { test: (p) => p.endsWith('.DS_Store'), reason: 'fichier système macOS' },
-  { test: (p) => p.toLowerCase().endsWith('thumbs.db'), reason: 'fichier système Windows' },
-  { test: (p) => p.split('/').some((seg) => seg.startsWith('._')), reason: 'fichier fantôme macOS' },
-  { test: (p) => p.endsWith('.env'), reason: 'fichier de secrets (.env)' },
+export class InvalidPathError extends Error {
+  constructor(
+    readonly path: string,
+    readonly reason: string
+  ) {
+    super(`Chemin invalide "${path}" : ${reason}`)
+    this.name = 'InvalidPathError'
+  }
+}
+
+export function canonicalizeRelativePath(rawPath: string): string {
+  if (!rawPath) {
+    throw new InvalidPathError(rawPath, 'le chemin est vide')
+  }
+
+  const normalizedSeparators = rawPath.replace(/\\/g, '/')
+
+  if (normalizedSeparators.startsWith('/')) {
+    throw new InvalidPathError(
+      rawPath,
+      'les chemins absolus ne sont pas autorisés'
+    )
+  }
+
+  const segments = normalizedSeparators.split('/')
+
+  if (segments.some((segment) => segment.length === 0)) {
+    throw new InvalidPathError(
+      rawPath,
+      'le chemin contient un segment vide'
+    )
+  }
+
+  if (segments.some((segment) => segment === '.')) {
+    throw new InvalidPathError(
+      rawPath,
+      'le segment "." n’est pas autorisé'
+    )
+  }
+
+  if (segments.some((segment) => segment === '..')) {
+    throw new InvalidPathError(
+      rawPath,
+      'le segment ".." n’est pas autorisé'
+    )
+  }
+
+  return segments
+    .map((segment) => segment.normalize('NFC'))
+    .join('/')
+}
+
+export function getTargetPathError(targetPath: string): string | null {
+  const trimmedPath = targetPath.trim()
+
+  if (!trimmedPath) {
+    return null
+  }
+
+  try {
+    canonicalizeRelativePath(trimmedPath)
+    return null
+  } catch (error) {
+    return error instanceof InvalidPathError
+      ? error.reason
+      : 'le chemin est invalide'
+  }
+}
+
+const DEFAULT_IGNORE_PATTERNS: Array<{
+  test: (path: string) => boolean
+  reason: string
+}> = [
+  {
+    test: (path) => path.split('/').includes('.git'),
+    reason: 'dossier .git',
+  },
+  {
+    test: (path) => path.split('/').includes('node_modules'),
+    reason: 'dossier node_modules',
+  },
+  {
+    test: (path) => path.endsWith('.DS_Store'),
+    reason: 'fichier système macOS',
+  },
+  {
+    test: (path) => path.toLowerCase().endsWith('thumbs.db'),
+    reason: 'fichier système Windows',
+  },
+  {
+    test: (path) => path.split('/').some((segment) => segment.startsWith('._')),
+    reason: 'fichier fantôme macOS',
+  },
+  {
+    test: (path) => path.endsWith('.env'),
+    reason: 'fichier de secrets (.env)',
+  },
 ]
 
-// Au-delà de ce seuil, l'encodage base64 en mémoire peut ralentir Safari sur iPhone —
-// on avertit simplement l'utilisateur, sans bloquer l'envoi.
-export const LARGE_FILE_THRESHOLD_BYTES = 20 * 1024 * 1024 // 20 Mo
+export const LARGE_FILE_THRESHOLD_BYTES = 20 * 1024 * 1024
 
 let counter = 0
-function nextId() {
+
+function nextId(): string {
   counter += 1
   return `f${Date.now().toString(36)}${counter}`
 }
 
-export function filesToDocked(fileList: FileList | File[]): DockedFile[] {
+export function filesToDocked(
+  fileList: FileList | File[]
+): DockedFile[] {
   const files = Array.from(fileList)
+
   return files.map((file) => {
-    const anyFile = file as File & { webkitRelativePath?: string }
-    const rawPath = anyFile.webkitRelativePath && anyFile.webkitRelativePath.length > 0
-      ? anyFile.webkitRelativePath
-      : file.name
+    const fileWithRelativePath = file as File & {
+      webkitRelativePath?: string
+    }
 
-    // iOS/macOS stockent les noms de fichiers accentués en Unicode NFD (décomposé) : "é" peut
-    // arriver comme "e" + accent combinant. On normalise en NFC pour que le chemin envoyé à
-    // GitHub corresponde exactement à ce qui est affiché, et évite les doublons silencieux.
-    const relativePath = rawPath.normalize('NFC')
+    const rawPath =
+      fileWithRelativePath.webkitRelativePath &&
+      fileWithRelativePath.webkitRelativePath.length > 0
+        ? fileWithRelativePath.webkitRelativePath
+        : file.name
 
-    const match = DEFAULT_IGNORE_PATTERNS.find((p) => p.test(relativePath))
+    const relativePath = canonicalizeRelativePath(rawPath)
+    const match = DEFAULT_IGNORE_PATTERNS.find((pattern) =>
+      pattern.test(relativePath)
+    )
 
     return {
       id: nextId(),
@@ -47,35 +141,58 @@ export function filesToDocked(fileList: FileList | File[]): DockedFile[] {
   })
 }
 
-/** Fusionne un nouvel ajout dans la liste existante ; les chemins identiques sont remplacés.
- *  Retourne aussi la liste des chemins qui existaient déjà et ont été écrasés, pour pouvoir
- *  en avertir l'utilisateur plutôt que de les remplacer silencieusement. */
 export function mergeDocked(
   existing: DockedFile[],
   added: DockedFile[]
-): { files: DockedFile[]; overwritten: string[] } {
-  const byPath = new Map(existing.map((f) => [f.relativePath, f]))
+): {
+  files: DockedFile[]
+  overwritten: string[]
+} {
+  const byPath = new Map(
+    existing.map((file) => [file.relativePath, file])
+  )
   const overwritten: string[] = []
+
   for (const item of added) {
-    if (byPath.has(item.relativePath)) overwritten.push(item.relativePath)
+    if (byPath.has(item.relativePath)) {
+      overwritten.push(item.relativePath)
+    }
+
     byPath.set(item.relativePath, item)
   }
-  return { files: Array.from(byPath.values()), overwritten }
+
+  return {
+    files: Array.from(byPath.values()),
+    overwritten,
+  }
 }
 
 export function totalSize(files: DockedFile[]): number {
-  return files.reduce((sum, f) => (f.excluded ? sum : sum + f.size), 0)
+  return files.reduce(
+    (sum, file) => (file.excluded ? sum : sum + file.size),
+    0
+  )
 }
 
 export function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 o'
+  if (bytes === 0) {
+    return '0 o'
+  }
+
   const units = ['o', 'Ko', 'Mo', 'Go']
-  const i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)))
-  const value = bytes / Math.pow(1024, i)
-  return `${value < 10 && i > 0 ? value.toFixed(1) : Math.round(value)} ${units[i]}`
+  const unitIndex = Math.min(
+    units.length - 1,
+    Math.floor(Math.log(bytes) / Math.log(1024))
+  )
+  const value = bytes / Math.pow(1024, unitIndex)
+
+  return `${
+    value < 10 && unitIndex > 0
+      ? value.toFixed(1)
+      : Math.round(value)
+  } ${units[unitIndex]}`
 }
 
-/** Structure en arbre pour l'affichage pliable dans l'écran Dock */
 export interface TreeNode {
   name: string
   path: string
@@ -93,17 +210,29 @@ export function buildTree(files: DockedFile[]): TreeNode[] {
     let pathSoFar = ''
 
     segments.forEach((segment, index) => {
-      pathSoFar = pathSoFar ? `${pathSoFar}/${segment}` : segment
-      const isLast = index === segments.length - 1
+      pathSoFar = pathSoFar
+        ? `${pathSoFar}/${segment}`
+        : segment
 
-      let node = level.find((n) => n.name === segment && n.isFolder === !isLast)
+      const isLast = index === segments.length - 1
+      let node = level.find(
+        (item) => item.name === segment && item.isFolder === !isLast
+      )
+
       if (!node) {
-        node = { name: segment, path: pathSoFar, isFolder: !isLast, children: [] }
+        node = {
+          name: segment,
+          path: pathSoFar,
+          isFolder: !isLast,
+          children: [],
+        }
         level.push(node)
       }
+
       if (isLast) {
         node.file = docked
       }
+
       level = node.children
     })
   }
@@ -111,26 +240,54 @@ export function buildTree(files: DockedFile[]): TreeNode[] {
   return root
 }
 
-export function joinTargetPath(targetPath: string, relativePath: string): string {
-  const cleanTarget = targetPath.replace(/^\/+|\/+$/g, '').trim()
-  return cleanTarget ? `${cleanTarget}/${relativePath}` : relativePath
+export function joinTargetPath(
+  targetPath: string,
+  relativePath: string
+): string {
+  const trimmedTarget = targetPath.trim()
+  const canonicalRelativePath =
+    canonicalizeRelativePath(relativePath)
+
+  if (!trimmedTarget) {
+    return canonicalRelativePath
+  }
+
+  const canonicalTargetPath =
+    canonicalizeRelativePath(trimmedTarget)
+
+  return canonicalizeRelativePath(
+    `${canonicalTargetPath}/${canonicalRelativePath}`
+  )
 }
 
-/** Propose un chemin alternatif ("nom (2).ext") quand le chemin d'origine existe déjà dans le
- *  dépôt, en incrémentant jusqu'à trouver un chemin libre parmi les chemins existants connus. */
-export function resolveRenamedPath(path: string, existingPaths: Set<string>): string {
-  const slashIdx = path.lastIndexOf('/')
-  const dir = slashIdx >= 0 ? path.slice(0, slashIdx + 1) : ''
-  const base = slashIdx >= 0 ? path.slice(slashIdx + 1) : path
-  const dotIdx = base.lastIndexOf('.')
-  const stem = dotIdx > 0 ? base.slice(0, dotIdx) : base
-  const ext = dotIdx > 0 ? base.slice(dotIdx) : ''
+export function resolveRenamedPath(
+  path: string,
+  existingPaths: Set<string>
+): string {
+  const canonicalPath = canonicalizeRelativePath(path)
+  const slashIndex = canonicalPath.lastIndexOf('/')
 
-  let n = 2
-  let candidate = `${dir}${stem} (${n})${ext}`
+  const directory =
+    slashIndex >= 0
+      ? canonicalPath.slice(0, slashIndex + 1)
+      : ''
+
+  const base =
+    slashIndex >= 0
+      ? canonicalPath.slice(slashIndex + 1)
+      : canonicalPath
+
+  const dotIndex = base.lastIndexOf('.')
+  const stem = dotIndex > 0 ? base.slice(0, dotIndex) : base
+  const extension = dotIndex > 0 ? base.slice(dotIndex) : ''
+
+  let suffix = 2
+  let candidate = `${directory}${stem} (${suffix})${extension}`
+
   while (existingPaths.has(candidate)) {
-    n += 1
-    candidate = `${dir}${stem} (${n})${ext}`
+    suffix += 1
+    candidate = `${directory}${stem} (${suffix})${extension}`
   }
-  return candidate
+
+  return canonicalizeRelativePath(candidate)
 }

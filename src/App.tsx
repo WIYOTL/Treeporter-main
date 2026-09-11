@@ -25,17 +25,33 @@ import { ScreenResult } from './components/ScreenResult'
 import { AppFooter } from './components/AppFooter'
 import { CreditsModal } from './components/CreditsModal'
 
-const FLOW_SCREENS: ScreenId[] = ['dock', 'destination', 'preview', 'sending']
+const FLOW_SCREENS: ScreenId[] = [
+  'dock',
+  'destination',
+  'preview',
+  'sending',
+]
 
-function derivePullRequestTitle(commitMessage: string, branchName: string): string {
+function derivePullRequestTitle(
+  commitMessage: string,
+  branchName: string
+): string {
   const firstLine = commitMessage.split('\n')[0].trim()
-  if (!firstLine) return `Fusionner ${branchName}`
-  return firstLine.length > 100 ? `${firstLine.slice(0, 97)}…` : firstLine
+
+  if (!firstLine) {
+    return `Fusionner ${branchName}`
+  }
+
+  return firstLine.length > 100
+    ? `${firstLine.slice(0, 97)}…`
+    : firstLine
 }
 
 export default function App() {
   const [screen, setScreen] = useState<ScreenId>('connect')
-  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>(() => getHistory())
+  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>(
+    () => getHistory()
+  )
   const [prLoading, setPrLoading] = useState(false)
   const [prError, setPrError] = useState<string | null>(null)
   const [prUrl, setPrUrl] = useState<string | null>(null)
@@ -45,12 +61,20 @@ export default function App() {
   const auth = useAuth(setScreen)
   const dock = useDock()
   const conflicts = useConflicts(auth.providerRef)
-  const destination = useDestination(auth.providerRef, conflicts.resetConflicts)
+  const resetDestinationConflicts = conflicts.resetConflicts
+
+  const destination = useDestination(
+    auth.providerRef,
+    resetDestinationConflicts
+  )
+
   const transfer = useTransfer(auth.providerRef)
   const pwaUpdate = usePwaUpdate()
 
   useEffect(() => {
-    if (!creditsOpen) return
+    if (!creditsOpen) {
+      return
+    }
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -59,7 +83,10 @@ export default function App() {
     }
 
     window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
   }, [creditsOpen])
 
   useEffect(() => {
@@ -74,10 +101,20 @@ export default function App() {
   }
 
   async function goToPreview() {
-    if (getTargetPathError(destination.destination.targetPath)) return
+    const targetPathError = getTargetPathError(
+      destination.destination.targetPath
+    )
+
+    if (targetPathError) {
+      return
+    }
 
     setScreen('preview')
-    await conflicts.checkConflicts(destination.destination, dock.files)
+
+    await conflicts.checkConflicts(
+      destination.destination,
+      dock.files
+    )
   }
 
   async function handleSend() {
@@ -93,59 +130,71 @@ export default function App() {
     setPrUrl(null)
     setPrError(null)
 
-    const branchWasNew = destination.destination.branch?.isNew === true
+    const branchWasNew =
+      destination.destination.branch?.isNew === true
 
-    const res = await transfer.runCommit(
+    const result = await transfer.runCommit(
       destination.destination,
       dock.files,
       conflicts.conflictChoices,
       conflicts.existingPaths
     )
 
-    if (res) {
-      setScreen('result')
-      setBranchWasCreated(branchWasNew)
-
-      if (branchWasNew) {
-        destination.markBranchCreated()
-      }
-
-      recordHistory(res)
+    if (!result) {
+      return
     }
+
+    setScreen('result')
+    setBranchWasCreated(branchWasNew)
+
+    if (branchWasNew) {
+      destination.markBranchCreated()
+    }
+
+    recordHistory(result)
   }
 
   async function handleSendRetry() {
-    const branchWasNew = destination.destination.branch?.isNew === true
+    const branchWasNew =
+      destination.destination.branch?.isNew === true
 
-    const res = await transfer.handleRetry(
+    const result = await transfer.handleRetry(
       destination.destination,
       dock.files,
       conflicts.conflictChoices,
       conflicts.existingPaths
     )
 
-    if (res) {
-      setScreen('result')
-      setBranchWasCreated(branchWasNew)
-
-      if (branchWasNew) {
-        destination.markBranchCreated()
-      }
-
-      recordHistory(res)
+    if (!result) {
+      return
     }
+
+    setScreen('result')
+    setBranchWasCreated(branchWasNew)
+
+    if (branchWasNew) {
+      destination.markBranchCreated()
+    }
+
+    recordHistory(result)
   }
 
-  function recordHistory(res: { filesSent: number; commitUrl: string }) {
-    if (!destination.destination.repo || !destination.destination.branch) {
+  function recordHistory(result: {
+    filesSent: number
+    commitUrl: string
+  }) {
+    if (
+      !destination.destination.repo ||
+      !destination.destination.branch
+    ) {
       return
     }
 
     addHistoryEntry({
       repoFullName: destination.destination.repo.fullName,
       branchName: destination.destination.branch.name,
-      filesSent: res.filesSent,
-      commitUrl: res.commitUrl,
+      filesSent: result.filesSent,
+      commitUrl: result.commitUrl,
       demo: auth.demo,
     })
 
@@ -165,20 +214,21 @@ export default function App() {
     setPrError(null)
 
     try {
-      const pr = await auth.providerRef.current.createPullRequest(
-        destination.destination.repo,
-        destination.destination.branch,
-        derivePullRequestTitle(
-          destination.destination.commitMessage,
-          destination.destination.branch.name
+      const pullRequest =
+        await auth.providerRef.current.createPullRequest(
+          destination.destination.repo,
+          destination.destination.branch,
+          derivePullRequestTitle(
+            destination.destination.commitMessage,
+            destination.destination.branch.name
+          )
         )
-      )
 
-      setPrUrl(pr.url)
-    } catch (err) {
+      setPrUrl(pullRequest.url)
+    } catch (error) {
       setPrError(
-        err instanceof Error
-          ? err.message
+        error instanceof Error
+          ? error.message
           : 'Impossible de créer la Pull Request.'
       )
     } finally {
@@ -187,11 +237,11 @@ export default function App() {
   }
 
   async function handleDisconnect() {
-    if (
-      !window.confirm(
-        'Déconnecter ce compte GitHub ? Le token enregistré sur cet iPhone sera effacé.'
-      )
-    ) {
+    const confirmed = window.confirm(
+      'Déconnecter ce compte GitHub ? Le token enregistré sur cet iPhone sera effacé.'
+    )
+
+    if (!confirmed) {
       return
     }
 
@@ -210,9 +260,10 @@ export default function App() {
     if (auth.demo) {
       auth.providerRef.current = new DemoClient()
     } else {
-      const stored = await loadToken()
-      if (stored) {
-        auth.providerRef.current = new GitHubClient(stored)
+      const storedToken = await loadToken()
+
+      if (storedToken) {
+        auth.providerRef.current = new GitHubClient(storedToken)
       }
     }
 
@@ -242,7 +293,9 @@ export default function App() {
           <p className="p-dim">Reprise de la session…</p>
         </div>
 
-        <AppFooter onCredits={() => setCreditsOpen(true)} />
+        <AppFooter
+          onCredits={() => setCreditsOpen(true)}
+        />
 
         <CreditsModal
           open={creditsOpen}
@@ -260,13 +313,20 @@ export default function App() {
 
           <div>
             <div className="app-title">Treeporter</div>
-            <div className="app-subtitle" style={{ marginTop: 0 }}>
+
+            <div
+              className="app-subtitle"
+              style={{ marginTop: 0 }}
+            >
               iPhone → GitHub
             </div>
           </div>
 
           {auth.demo && screen !== 'connect' && (
-            <span className="demo-badge" style={{ marginLeft: 'auto' }}>
+            <span
+              className="demo-badge"
+              style={{ marginLeft: 'auto' }}
+            >
               Démo
             </span>
           )}
@@ -299,7 +359,9 @@ export default function App() {
           )}
         </div>
 
-        {flowIndex >= 0 && <StepBar current={flowIndex} />}
+        {flowIndex >= 0 && (
+          <StepBar current={flowIndex} />
+        )}
       </div>
 
       <div className="app-content">
@@ -323,7 +385,9 @@ export default function App() {
             onClear={dock.handleClearWithConfirm}
             onContinue={goToDestination}
             overwriteNotice={dock.overwriteNotice}
-            onDismissOverwriteNotice={dock.dismissOverwriteNotice}
+            onDismissOverwriteNotice={
+              dock.dismissOverwriteNotice
+            }
             zipLoading={dock.zipLoading}
             zipError={dock.zipError}
             onDismissZipError={dock.dismissZipError}
@@ -335,13 +399,13 @@ export default function App() {
             repos={destination.repos}
             branches={destination.branches}
             loadingRepos={destination.loadingRepos}
-            reposError={destination.reposError}
+            repositoryLoadError={null}
             loadingBranches={destination.loadingBranches}
-            emptyRepo={destination.emptyRepo}
-            branchError={destination.branchError}
+            emptyRepo={false}
+            branchError={null}
             destination={destination.destination}
             onSelectRepo={destination.selectRepo}
-            onRetryRepos={destination.loadRepos}
+            loadRepos={destination.loadReposIfNeeded}
             onChange={destination.updateDestination}
             onBack={() => setScreen('dock')}
             onContinue={goToPreview}
@@ -357,10 +421,16 @@ export default function App() {
             onSend={handleSend}
             existingPaths={conflicts.existingPaths}
             conflictLoading={conflicts.conflictLoading}
-            conflictCheckError={conflicts.conflictCheckError}
+            conflictCheckError={
+              conflicts.conflictCheckError
+            }
             conflictChoices={conflicts.conflictChoices}
-            onSetConflictChoice={conflicts.setConflictChoice}
-            onApplyBulkConflictChoice={conflicts.applyBulkConflictChoice}
+            onSetConflictChoice={
+              conflicts.setConflictChoice
+            }
+            onApplyBulkConflictChoice={
+              conflicts.applyBulkConflictChoice
+            }
           />
         )}
 
@@ -383,7 +453,9 @@ export default function App() {
             demo={auth.demo}
             onNewTransfer={handleNewTransfer}
             previousHistory={historyEntries.slice(1)}
-            onCreatePullRequest={handleCreatePullRequest}
+            onCreatePullRequest={
+              handleCreatePullRequest
+            }
             prLoading={prLoading}
             prError={prError}
             prUrl={prUrl}
@@ -392,7 +464,9 @@ export default function App() {
         )}
       </div>
 
-      <AppFooter onCredits={() => setCreditsOpen(true)} />
+      <AppFooter
+        onCredits={() => setCreditsOpen(true)}
+      />
 
       <CreditsModal
         open={creditsOpen}
