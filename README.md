@@ -1,4 +1,4 @@
-# Treeporter — zone de transfert iPhone → GitHub (V1)
+# Treeporter — zone de transfert iPhone → GitHub (V2.0.0)
 
 PWA mobile-first : ajoute des fichiers/dossiers depuis l'app **Fichiers** de l'iPhone (arborescence conservée)
 et envoie-les vers un dépôt GitHub en **un seul commit atomique**, via la Git Data API.
@@ -150,9 +150,6 @@ https://<ton-compte>.github.io/<nom-du-repo>/
 Ouvre-la dans **Safari sur l'iPhone**, puis **Partager → Sur l'écran d'accueil** pour l'installer comme PWA —
 cette fois en HTTPS complet, donc avec le service worker actif (contrairement au test en réseau local).
 
-## Limites connues de la V1
+Suivez Wiyotl sur Instagram, DEV Community et Github.
 
-- Pas d'envoi en arrière-plan : reste sur l'app pendant tout le transfert.
-- Fichiers volumineux (au-delà d'une vingtaine de Mo) : l'encodage en mémoire peut ralentir Safari — à surveiller
-  en usage réel.
-- GitHub uniquement pour l'instant (GitLab, Dropbox, Google Drive prévus dans une prochaine étape, comme convenu).
+Wiyotl est une marque deposée ; interdiction de réutiliser sans l'accord du créateur.
