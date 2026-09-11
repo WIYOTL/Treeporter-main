@@ -1,4 +1,4 @@
-name: Déployer Treeport sur GitHub Pages
+name: Déployer Treeporter sur GitHub Pages
 
 on:
   push:

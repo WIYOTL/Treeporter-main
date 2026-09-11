@@ -1,4 +1,4 @@
-# Treeport — zone de transfert iPhone → GitHub (V1)
+# Treeporter — zone de transfert iPhone → GitHub (V1)
 
 PWA mobile-first : ajoute des fichiers/dossiers depuis l'app **Fichiers** de l'iPhone (arborescence conservée)
 et envoie-les vers un dépôt GitHub en **un seul commit atomique**, via la Git Data API.
@@ -8,7 +8,7 @@ et envoie-les vers un dépôt GitHub en **un seul commit atomique**, via la Git 
 Prérequis : Node.js 18+ et npm (sur ton Mac/PC).
 
 ```bash
-cd treeport
+cd treeporter
 npm install
 npm run dev
 ```
@@ -44,7 +44,7 @@ Tu obtiens une URL `https://....` — c'est celle-là que tu utiliseras au quoti
 2. Bouton **Partager** (carré avec flèche vers le haut).
 3. **Sur l'écran d'accueil** → Ajouter.
 
-L'icône Treeport apparaît alors comme une app, en plein écran, sans barre d'adresse.
+L'icône Treeporter apparaît alors comme une app, en plein écran, sans barre d'adresse.
 
 ## 4. Tester sans compte GitHub (mode démo)
 
@@ -61,18 +61,18 @@ section). Le fonctionnement avec un token classique, lui, est stable et vérifi�
 
 1. Sur github.com → **Settings → Developer settings → Personal access tokens → Tokens (classic)**.
 2. Génère un token avec le scope **`repo`** (accès complet aux dépôts privés/publics que tu utilises).
-3. Colle ce token dans Treeport à l'écran de connexion. Il reste stocké uniquement sur ton iPhone (dans le
+3. Colle ce token dans Treeporter à l'écran de connexion. Il reste stocké uniquement sur ton iPhone (dans le
    stockage local du navigateur) — il n'est jamais envoyé ailleurs qu'à `api.github.com`, jamais dans une URL,
    jamais dans un log, jamais commité dans le dépôt.
 
-> **Note — tokens fine-grained (401 connu) :** diagnostic établi en V1.2 — l'endpoint `/user` que Treeport
+> **Note — tokens fine-grained (401 connu) :** diagnostic établi en V1.2 — l'endpoint `/user` que Treeporter
 > utilise pour valider un token fonctionne avec les tokens fine-grained et ne nécessite aucune permission
 > particulière (vérifié dans la documentation GitHub à jour). Ce n'est donc pas un problème de compatibilité
-> d'endpoint côté Treeport. Les causes les plus probables : le token a expiré (obligatoire pour un fine-grained,
+> d'endpoint côté Treeporter. Les causes les plus probables : le token a expiré (obligatoire pour un fine-grained,
 > 1 an maximum, contrairement à un classique qui peut être permanent), ou il a été copié incomplet (un token
 > fine-grained fait ~93+ caractères contre ~40 pour un classique, plus difficile à sélectionner en entier au
 > clavier iPhone). Non corrigé côté code pour ne pas risquer de casser le fonctionnement actuel avec les tokens
-> classiques — Treeport affiche maintenant un message d'erreur spécifique à ce cas plutôt qu'un message générique.
+> classiques — Treeporter affiche maintenant un message d'erreur spécifique à ce cas plutôt qu'un message générique.
 
 ## Nouveautés V2.0.0
 
@@ -102,7 +102,7 @@ section). Le fonctionnement avec un token classique, lui, est stable et vérifi�
 
 ## Nouveautés V1.1
 
-- **Détection de conflits** : avant l'envoi, Treeport vérifie si des fichiers existent déjà au même chemin dans
+- **Détection de conflits** : avant l'envoi, Treeporter vérifie si des fichiers existent déjà au même chemin dans
   le dépôt/branche cible, et propose de les **remplacer**, **ignorer**, ou **renommer automatiquement**
   (fichier ↔ fichier ou en un clic pour tous).
 - Noms de fichiers accentués (é, à, ç…) normalisés pour correspondre exactement à ce qui est envoyé sur GitHub.
@@ -118,10 +118,10 @@ automatiquement le site.
 ### Étape 1 — Pousser le code sur GitHub (nécessite un ordinateur, une seule fois)
 
 ```bash
-cd treeport
+cd treeporter
 git init
 git add .
-git commit -m "Treeport V1"
+git commit -m "Treeporter V2.0.0"
 git branch -M main
 git remote add origin https://github.com/<ton-compte>/<nom-du-repo>.git
 git push -u origin main
@@ -130,7 +130,7 @@ git push -u origin main
 ### Étape 2 — Faire correspondre le `base` Vite au nom exact du dépôt
 
 Dans `vite.config.ts`, la constante `base` doit être `'/<nom-du-repo>/'` (respecte la casse). Si ton dépôt
-s'appelle par exemple `treeport`, laisse `base = '/treeport/'`. Si tu le nommes autrement, modifie cette seule
+s'appelle par exemple `treeporter`, laisse `base = '/Treeporter-main/'`. Si tu le nommes autrement, modifie cette seule
 ligne avant de pousser (ou pousse une petite mise à jour ensuite).
 
 ### Étape 3 — Activer GitHub Pages

@@ -13,7 +13,7 @@ export interface HistoryEntry {
   at: string
 }
 
-const STORAGE_KEY = 'treeport:history'
+const STORAGE_KEY = 'treeporter:history'
 const MAX_ENTRIES = 10
 
 function readAll(): HistoryEntry[] {

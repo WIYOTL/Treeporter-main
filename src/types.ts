@@ -1,4 +1,4 @@
-// Types partagés de Treeport
+// Types partagés de Treeporter
 
 export type ScreenId = 'connect' | 'dock' | 'destination' | 'preview' | 'sending' | 'result'
 

@@ -35,7 +35,7 @@ export function ScreenSending({
 
       {updatePending && (
         <div className="banner banner-info" style={{ marginBottom: 12 }}>
-          Une nouvelle version de Treeport est disponible — elle s'appliquera automatiquement juste après cet envoi.
+          Une nouvelle version de Treeporter est disponible — elle s'appliquera automatiquement juste après cet envoi.
         </div>
       )}
 

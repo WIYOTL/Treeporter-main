@@ -184,9 +184,9 @@ export default function App() {
         <div className="app-title-row">
           <div className="app-mark" />
           <div>
-            <div className="app-title">Treeport</div>
+            <div className="app-title">Treeporter</div>
             <div className="app-subtitle" style={{ marginTop: 0 }}>
-              iPhone → GitHub
+              Transfert vers Github avec n'importe quel appareil
             </div>
           </div>
           {auth.demo && screen !== 'connect' && (

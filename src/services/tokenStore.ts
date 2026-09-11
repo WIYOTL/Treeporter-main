@@ -13,7 +13,7 @@
 const DB_NAME = 'treeport-store'
 const STORE_NAME = 'kv'
 const TOKEN_KEY = 'github-token'
-const LOCAL_STORAGE_KEY = 'treeport:github-token'
+const LOCAL_STORAGE_KEY = 'treeporter:github-token'
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
