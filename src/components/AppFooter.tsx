@@ -3,7 +3,10 @@ interface Props {
   onHelp: () => void
 }
 
-export function AppFooter({ onCredits, onHelp }: Props) {
+export function AppFooter({
+  onCredits,
+  onHelp,
+}: Props) {
   return (
     <footer className="app-footer">
       <div className="app-footer-meta">
@@ -12,7 +15,10 @@ export function AppFooter({ onCredits, onHelp }: Props) {
         <span>© 2026 Wiyotl. Tous droits réservés.</span>
       </div>
 
-      <nav className="app-footer-links" aria-label="Pied de page">
+      <nav
+        className="app-footer-links"
+        aria-label="Pied de page"
+      >
         <button
           type="button"
           className="app-footer-link"
@@ -36,6 +42,24 @@ export function AppFooter({ onCredits, onHelp }: Props) {
           rel="noreferrer"
         >
           GitHub
+        </a>
+
+        <a
+          className="app-footer-link"
+          href="https://www.instagram.com/wiyotl/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Instagram
+        </a>
+
+        <a
+          className="app-footer-link"
+          href="https://dev.to/wiyotl"
+          target="_blank"
+          rel="noreferrer"
+        >
+          DEV Community
         </a>
       </nav>
     </footer>
