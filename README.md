@@ -4,6 +4,11 @@
 PWA mobile-first : ajoute des fichiers/dossiers depuis l'app **Fichiers** de l'iPhone (arborescence conservée)
 et envoie-les vers un dépôt GitHub en **un seul commit atomique**, via la Git Data API.
 
+⭐ Si Treeporter vous est utile, pensez à laisser une étoile sur GitHub.
+
+ou, cliquez sur ce lien : https://qrco.de/bh0fIP et laisse des étoiles et un commentaire !
+
+
 ## 1. Installer et lancer en local
 
 Prérequis : Node.js 18+ et npm (sur ton Mac/PC).
