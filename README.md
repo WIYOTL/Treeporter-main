@@ -27,6 +27,10 @@ Vou pouvez aussi envoyer une archive .ZIP, un fichier seul ou un dossier complet
 
 (choisissez le dépôt Github : vous devez choisir le dépôt dans lequel vous allez envoyer et sauvegarder votre fichier ou dossier complet)
 
+<img width="951" height="607" alt="Capture d&#39;écran 2026-09-21 185207" src="https://github.com/user-attachments/assets/896fe340-7e2f-436c-aa2b-a67cff31e06e" />
+
+(vérifiez votre decision : vérifiez ce que vous voulez vraiment envoyer une dernière fois, sinon cliquez sur le bouton "Retour" et modifiez ce que vous voulez)
+
 ## 1. Installer et lancer en local
 
 Prérequis : Node.js 18+ et npm (sur ton Mac/PC).
