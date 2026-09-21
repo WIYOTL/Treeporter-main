@@ -1,5 +1,5 @@
 <img width="192" height="192" alt="icon-192" src="https://github.com/user-attachments/assets/ea745944-d66c-4704-87ea-ded9fbe4d2a0" />
-# Treeporter — zone de transfert depuis n'importe quel appareil → GitHub (V2.0.0)
+# Treeporter — transfer zone from any device → GitHub (V2.0.0)
 
 Mobile-first PWA: add files/folders from the iPhone's **Files** app (preserving the directory structure)
 and push them to a GitHub repository in **a single atomic commit** via the Git Data API.
@@ -14,7 +14,7 @@ cross-platform
 
 ⭐ If you find Treeporter useful, please consider starring it on GitHub.
 
-or click on this link : https://qrco.de/bh0fIP et laisse des étoiles et un commentaire !
+or click on this link : https://qrco.de/bh0fIP and leave a rating and a comment!
 
 Screenshots :
 
