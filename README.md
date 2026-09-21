@@ -191,6 +191,6 @@ https://<ton-compte>.github.io/<nom-du-repo>/
 Ouvre-la dans **Safari sur l'iPhone**, puis **Partager → Sur l'écran d'accueil** pour l'installer comme PWA —
 cette fois en HTTPS complet, donc avec le service worker actif (contrairement au test en réseau local).
 
-Suivez Wiyotl sur Instagram, DEV Community et Github.
+Suivez Wiyotl sur Instagram (https://www.instagram.com/wiyotl/), DEV Community (https://dev.to/wiyotl) et Github.
 
 Wiyotl est une marque deposée ; interdiction de réutiliser sans l'accord du créateur.
