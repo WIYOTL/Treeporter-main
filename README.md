@@ -10,6 +10,9 @@ ou, cliquez sur ce lien : https://qrco.de/bh0fIP et laisse des étoiles et un co
 
 Screenshots :
 
+<img width="585" height="1266" alt="IMG_3879" src="https://github.com/user-attachments/assets/fde8f83a-d3c4-4bb9-a26d-9d18b60b08cd" />
+
+<img width="585" height="1266" alt="IMG_3880" src="https://github.com/user-attachments/assets/f7aa294a-5ecc-48e6-be96-6a587f7fbba7" />
 
 ## 1. Installer et lancer en local
 
