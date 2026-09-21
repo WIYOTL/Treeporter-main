@@ -25,11 +25,16 @@ Vou pouvez aussi envoyer une archive .ZIP, un fichier seul ou un dossier complet
 
 <img width="915" height="927" alt="Capture d&#39;écran 2026-09-21 184731" src="https://github.com/user-attachments/assets/35109af9-f629-4793-9e49-6a4abbd84bb3" />
 
-(choisissez le dépôt Github : vous devez choisir le dépôt dans lequel vous allez envoyer et sauvegarder votre fichier ou dossier complet)
+(choisissez le dépôt GitHub : vous devez choisir le dépôt dans lequel vous allez envoyer et sauvegarder votre fichier ou dossier complet)
 
 <img width="951" height="607" alt="Capture d&#39;écran 2026-09-21 185207" src="https://github.com/user-attachments/assets/896fe340-7e2f-436c-aa2b-a67cff31e06e" />
 
 (vérifiez votre decision : vérifiez ce que vous voulez vraiment envoyer une dernière fois, sinon cliquez sur le bouton "Retour" et modifiez ce que vous voulez)
+
+<img width="952" height="887" alt="Capture d&#39;écran 2026-09-21 185552" src="https://github.com/user-attachments/assets/a3915ab9-2e44-487e-9f75-0332dae51ff9" />
+
+(envoie vers GitHub : vérifiez bien que votre Personal-Access Token possède Contents : "Read and Write". Sinon, vous aurez une erreur et l'envoie ne s'effectuera pas.
+Si l'envoie s'effectue correctement, vérifiez votre depot que vous avez choisi précédemment et vous aurez une sauvegarde rapide de tout votre projet !!)
 
 ## 1. Installer et lancer en local
 
