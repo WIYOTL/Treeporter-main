@@ -8,6 +8,8 @@ et envoie-les vers un dépôt GitHub en **un seul commit atomique**, via la Git 
 
 ou, cliquez sur ce lien : https://qrco.de/bh0fIP et laisse des étoiles et un commentaire !
 
+Screenshots :
+
 
 ## 1. Installer et lancer en local
 
