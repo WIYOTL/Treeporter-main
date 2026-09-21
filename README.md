@@ -14,6 +14,10 @@ Screenshots :
 
 <img width="585" height="1266" alt="IMG_3880" src="https://github.com/user-attachments/assets/f7aa294a-5ecc-48e6-be96-6a587f7fbba7" />
 
+<img width="941" height="907" alt="Capture d&#39;écran 2026-09-21 183838" src="https://github.com/user-attachments/assets/2e4ccc8e-f45c-4b15-b254-b64dfe3fe643" />
+
+(après la connexion)
+
 ## 1. Installer et lancer en local
 
 Prérequis : Node.js 18+ et npm (sur ton Mac/PC).
