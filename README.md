@@ -23,6 +23,10 @@ Screenshots :
 (après l'ajout de fichiers. Dans cet exemple, on a pris un dossier files/ avec un fichier index.html.
 Vou pouvez aussi envoyer une archive .ZIP, un fichier seul ou un dossier complet (l'arborescence du projet est conservée !!)
 
+<img width="915" height="927" alt="Capture d&#39;écran 2026-09-21 184731" src="https://github.com/user-attachments/assets/35109af9-f629-4793-9e49-6a4abbd84bb3" />
+
+(choisissez le dépôt Github : vous devez choisir le dépôt dans lequel vous allez envoyer et sauvegarder votre fihier ou dossier complet)
+
 ## 1. Installer et lancer en local
 
 Prérequis : Node.js 18+ et npm (sur ton Mac/PC).
