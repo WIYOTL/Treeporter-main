@@ -20,7 +20,8 @@ Screenshots :
 
 <img width="932" height="892" alt="Capture d&#39;écran 2026-09-21 184159" src="https://github.com/user-attachments/assets/025b6d5c-8986-422d-b47c-c84dc77c19b1" />
 
-(après l'ajout de fichiers)
+(après l'ajout de fichiers. Dans cet exemple, on a pris un dossier files/ avec un fichier index.html.
+Vou pouvez aussi envoyer une archive .ZIP, un fichier seul ou un dossier complet (l'arborescence du projet est conservée !!)
 
 ## 1. Installer et lancer en local
 
