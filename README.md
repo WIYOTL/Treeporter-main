@@ -25,7 +25,7 @@ Vou pouvez aussi envoyer une archive .ZIP, un fichier seul ou un dossier complet
 
 <img width="915" height="927" alt="Capture d&#39;écran 2026-09-21 184731" src="https://github.com/user-attachments/assets/35109af9-f629-4793-9e49-6a4abbd84bb3" />
 
-(choisissez le dépôt Github : vous devez choisir le dépôt dans lequel vous allez envoyer et sauvegarder votre fihier ou dossier complet)
+(choisissez le dépôt Github : vous devez choisir le dépôt dans lequel vous allez envoyer et sauvegarder votre fichier ou dossier complet)
 
 ## 1. Installer et lancer en local
 
