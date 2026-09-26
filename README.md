@@ -16,6 +16,8 @@ cross-platform
 
 ou, cliquez sur ce lien : https://qrco.de/bh0fIP et laisse des étoiles et un commentaire !
 
+Treeporter Pro — Prochainement Une version premium est à l'étude. Fonctionnalités en cours d'évaluation : - Synchronisation automatique - Comptes GitHub multiples - Gestion de projet avancée Intéressé ? Ouvrez une « issue » ou contactez moi.
+
 Screenshots :
 
 <img width="585" height="1266" alt="IMG_3879" src="https://github.com/user-attachments/assets/fde8f83a-d3c4-4bb9-a26d-9d18b60b08cd" />
