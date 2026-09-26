@@ -25,7 +25,7 @@ Features under evaluation:
 - Multiple GitHub accounts
 - Advanced project management
 
-Interested? Open an issue or contact us.
+Interested? Open an issue or contact me.
 
 Screenshots :
 
