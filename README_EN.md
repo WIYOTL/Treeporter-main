@@ -209,4 +209,7 @@ this time over full HTTPS, so the service worker is active (unlike the local net
 
 Follow Wiyotl on Instagram (https://www.instagram.com/wiyotl/), DEV Community (https://dev.to/wiyotl), and GitHub.
 
+Community on Reddit:
+https://www.reddit.com/r/wiyotltools_dev/
+
 Wiyotl is a registered trademark; reuse without the creator's permission is prohibited.
