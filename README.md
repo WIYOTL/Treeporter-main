@@ -195,4 +195,7 @@ cette fois en HTTPS complet, donc avec le service worker actif (contrairement au
 
 Suivez Wiyotl sur Instagram (https://www.instagram.com/wiyotl/), DEV Community (https://dev.to/wiyotl) et Github.
 
+Communite sur Reddit:
+https://www.reddit.com/r/wiyotltools_dev/
+
 Wiyotl est une marque deposée ; interdiction de réutiliser sans l'accord du créateur.
