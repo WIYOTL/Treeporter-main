@@ -212,4 +212,13 @@ Follow Wiyotl on Instagram (https://www.instagram.com/wiyotl/), DEV Community (h
 Community on Reddit:
 https://www.reddit.com/r/wiyotltools_dev/
 
+## Support Wiyotl & Treeporter ☕
+
+If Treeporter helped you save time, consider supporting my work! As a 16-year-old indie developer, every donation helps me build more tools.
+
+* **Solana (SOL) Address:** `8XoQ2b9QzsC49aZtykrFgahc9DUioQ2vifanfTDfa92c`
+* **Network:** Solana
+
+
 Wiyotl is a registered trademark; reuse without the creator's permission is prohibited.
+
