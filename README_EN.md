@@ -214,7 +214,7 @@ https://www.reddit.com/r/wiyotltools_dev/
 
 ## Support Wiyotl & Treeporter ☕
 
-If Treeporter helped you save time, consider supporting my work! As a 16-year-old indie developer, every donation helps me build more tools.
+If Treeporter helped you save time, consider supporting my work! As a indie developer, every donation helps me build more tools.
 
 * **Solana (SOL) Address:** `8XoQ2b9QzsC49aZtykrFgahc9DUioQ2vifanfTDfa92c`
 * **Network:** Solana
