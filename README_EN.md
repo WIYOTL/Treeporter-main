@@ -212,7 +212,7 @@ Follow Wiyotl on Instagram (https://www.instagram.com/wiyotl/), DEV Community (h
 Community on Reddit:
 https://www.reddit.com/r/wiyotltools_dev/
 
-## Support Wiyotl & Treeporter ☕
+## Support Wiyotl & Treeporter 
 
 If Treeporter helped you save time, consider supporting my work! As a indie developer, every donation helps me build more tools.
 
