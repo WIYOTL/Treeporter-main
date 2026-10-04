@@ -198,14 +198,5 @@ Suivez Wiyotl sur Instagram (https://www.instagram.com/wiyotl/), DEV Community (
 Communite sur Reddit:
 https://www.reddit.com/r/wiyotltools_dev/
 
-Soutenez Wiyotl et Treeporter ☕
-
-Si Treeporter vous a permis de gagner du temps, pensez à soutenir mon travail ! En tant que développeur indépendant, chaque don me permet de créer davantage d'outils.
-
-Adresse Solana (SOL) : 8XoQ2b9QzsC49aZtykrFgahc9DUioQ2vifanfTDfa92c
-
-Réseau : Solana
-
-Wiyotl est une marque déposée ; toute réutilisation sans l'autorisation du créateur est interdite.
 
 Wiyotl est une marque deposée ; interdiction de réutiliser sans l'accord du créateur.
