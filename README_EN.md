@@ -4,6 +4,11 @@
 Mobile-first PWA: add files/folders from the iPhone's **Files** app (preserving the directory structure)
 and push them to a GitHub repository in **a single atomic commit** via the Git Data API.
 
+## Downloads
+
+- 🌐 Web Version: https://wiyotl.github.io/Treeporter-main/
+- 🍎 macOS Pre-Release: https://github.com/Wiyotl/Treeporter-main/releases
+
 github
 file-transfer
 file-upload
