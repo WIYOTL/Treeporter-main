@@ -9,6 +9,8 @@ and push them to a GitHub repository in **a single atomic commit** via the Git D
 - 🌐 Web Version: https://wiyotl.github.io/Treeporter-main/
 - 🍎 macOS Pre-Release: https://github.com/Wiyotl/Treeporter-main/releases
 
+----------------------------------------------------------------------------------------------
+
 github
 file-transfer
 file-upload
@@ -21,6 +23,8 @@ cross-platform
 
 or click on this link : https://qrco.de/bh0fIP and leave a rating and a comment!
 
+-------------------------------------------------------------------------------------------------
+
 Treeporter Pro — Coming Soon
 
 A premium version is being considered.
@@ -31,6 +35,9 @@ Features under evaluation:
 - Advanced project management
 
 Interested? Open an issue or contact me.
+
+
+------------------------------------------------------------------------------------------------------------------------
 
 Screenshots :
 
