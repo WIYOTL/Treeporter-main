@@ -57,6 +57,48 @@ describe('filesToDocked', () => {
     expect(included[0].relativePath).toBe('projet/src/app.ts')
   })
 
+  it('exclut les variantes .env et les chemins imbriqués', () => {
+    const files = filesToDocked([
+      makeFile('.env', 'secret', 'app/.env'),
+      makeFile('.env.local', 'secret', 'app/.env.local'),
+      makeFile('.env.production', 'secret', 'app/.env.production'),
+      makeFile('.env.development', 'secret', 'config/.env.development'),
+      makeFile('.env.test', 'secret', 'src/.env.test'),
+      makeFile('.env.production.local', 'secret', 'app/.env.production.local'),
+      makeFile('safe.txt', 'ok', 'app/safe.txt'),
+    ])
+
+    const excluded = files.filter((f) => f.excluded)
+    const included = files.filter((f) => !f.excluded)
+
+    expect(excluded).toHaveLength(6)
+    expect(excluded.map((f) => f.relativePath)).toEqual([
+      'app/.env',
+      'app/.env.local',
+      'app/.env.production',
+      'config/.env.development',
+      'src/.env.test',
+      'app/.env.production.local',
+    ])
+
+    expect(included).toHaveLength(1)
+    expect(included[0].relativePath).toBe('app/safe.txt')
+  })
+
+  it('n\'exclut pas les autres fichiers cachés non sensibles', () => {
+    const files = filesToDocked([
+      makeFile('.gitignore', 'x', 'app/.gitignore'),
+      makeFile('.npmrc', 'x', 'app/.npmrc'),
+      makeFile('.tool-versions', 'x', 'app/.tool-versions'),
+      makeFile('.envrc', 'x', 'app/.envrc'),
+      makeFile('index.ts', 'x', 'app/index.ts'),
+    ])
+
+    const excluded = files.filter((f) => f.excluded)
+    expect(excluded).toHaveLength(0)
+    expect(files).toHaveLength(5)
+  })
+
   it('marque un fichier comme volumineux au-delà du seuil', () => {
     const bigContent = 'x'.repeat(LARGE_FILE_THRESHOLD_BYTES + 1)
     const [docked] = filesToDocked([makeFile('gros.bin', bigContent)])
@@ -99,6 +141,16 @@ describe('totalSize', () => {
       makeFile('.env', 'secret'), // exclu
     ])
     expect(totalSize(files)).toBe(3)
+  })
+
+  it('exclut toutes les variantes .env du calcul de taille', () => {
+    const files = filesToDocked([
+      makeFile('app.ts', 'code'), // 4 octets
+      makeFile('.env', 'secret1', 'app/.env'), // exclu
+      makeFile('.env.local', 'secret2', 'app/.env.local'), // exclu
+      makeFile('.env.production', 'secret3', 'app/.env.production'), // exclu
+    ])
+    expect(totalSize(files)).toBe(4)
   })
 })
 
