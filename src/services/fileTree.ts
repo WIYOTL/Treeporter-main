@@ -94,7 +94,7 @@ const DEFAULT_IGNORE_PATTERNS: Array<{
     reason: 'fichier fantôme macOS',
   },
   {
-    test: (path) => /\.env(\.\w+)?$/.test(path),
+    test: (path) => /\.env(\.\w+)*$/.test(path),
     reason: 'fichier de secrets (.env*)',
   },
 ]
@@ -252,8 +252,15 @@ export function joinTargetPath(
     return canonicalRelativePath
   }
 
+  // Nettoyer les slashes au début et à la fin du chemin cible avant normalisation
+  const cleanedTarget = trimmedTarget.replace(/^\/+|\/+$/g, '')
+
+  if (!cleanedTarget) {
+    return canonicalRelativePath
+  }
+
   const canonicalTargetPath =
-    canonicalizeRelativePath(trimmedTarget)
+    canonicalizeRelativePath(cleanedTarget)
 
   return canonicalizeRelativePath(
     `${canonicalTargetPath}/${canonicalRelativePath}`
