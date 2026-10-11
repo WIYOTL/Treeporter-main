@@ -36,14 +36,14 @@ export function canonicalizeRelativePath(rawPath: string): string {
   if (segments.some((segment) => segment === '.')) {
     throw new InvalidPathError(
       rawPath,
-      'le segment "." n’est pas autorisé'
+      'le segment "." n'est pas autorisé'
     )
   }
 
   if (segments.some((segment) => segment === '..')) {
     throw new InvalidPathError(
       rawPath,
-      'le segment ".." n’est pas autorisé'
+      'le segment ".." n'est pas autorisé'
     )
   }
 
@@ -94,8 +94,8 @@ const DEFAULT_IGNORE_PATTERNS: Array<{
     reason: 'fichier fantôme macOS',
   },
   {
-    test: (path) => path.endsWith('.env'),
-    reason: 'fichier de secrets (.env)',
+    test: (path) => /\.env(\.\w+)?$/.test(path),
+    reason: 'fichier de secrets (.env*)',
   },
 ]
 
