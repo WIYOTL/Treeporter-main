@@ -22,7 +22,7 @@ Avez-vous déjà utilisé Treeporter ? Partagez votre expérience, signalez les
 
 👉 [Partagez vos commentaires] : https://chatform.in/f/treeporter-user-feedback-0cef1b
 
-Vous pouvez également partager vos suggestions et échanger des idées sur [GitHub Discussions] : #4.
+Vous pouvez également partager vos suggestions et échanger des idées sur [GitHub Discussions]: https://github.com/WIYOTL/Treeporter-main/discussions/4.
 
 -------------------------------------------------------------------------------------------------------------
 
