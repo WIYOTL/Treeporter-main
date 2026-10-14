@@ -9,6 +9,18 @@ and push them to a GitHub repository in **a single atomic commit** via the Git D
 - 🌐 Web Version: https://wiyotl.github.io/Treeporter-main/
 - 🍎 macOS Pre-Release: https://github.com/Wiyotl/Treeporter-main/releases
 
+-----------------------------------------------------------------------------
+
+## 💬 Feedback
+
+Your feedback helps improve Treeporter!
+
+Have you tried Treeporter? Share your experience, report difficulties, and suggest features for future versions.
+
+👉 **[Share your feedback]: https://chatform.in/f/treeporter-user-feedback-0cef1b**
+
+You can also share suggestions and discuss ideas in [GitHub Discussions]: https://github.com/WIYOTL/Treeporter-main/discussions/4.
+
 ----------------------------------------------------------------------------------------------
 
 github
