@@ -12,6 +12,18 @@ Téléchargements
 
 🍎 Préversion macOS : https://github.com/Wiyotl/Treeporter-main/releases
 
+-----------------------------------------------------------------------------------------------------
+
+# 💬 Vos commentaires sont précieux
+
+Vos commentaires nous aident à améliorer Treeporter !
+
+Avez-vous déjà utilisé Treeporter ? Partagez votre expérience, signalez les problèmes rencontrés et suggérez des fonctionnalités pour les prochaines versions.
+
+👉 [Partagez vos commentaires] : https://chatform.in/f/treeporter-user-feedback-0cef1b
+
+Vous pouvez également partager vos suggestions et échanger des idées sur [GitHub Discussions] : #4.
+
 -------------------------------------------------------------------------------------------------------------
 
 github
