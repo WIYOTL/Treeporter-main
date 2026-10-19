@@ -219,10 +219,35 @@ https://<ton-compte>.github.io/<nom-du-repo>/
 Ouvre-la dans **Safari sur l'iPhone**, puis **Partager → Sur l'écran d'accueil** pour l'installer comme PWA —
 cette fois en HTTPS complet, donc avec le service worker actif (contrairement au test en réseau local).
 
+——————————————————————————————————————————
+
+## 🛠️ Diagnostic GitHub — 20 €
+
+Tu rencontres un problème précis lors d'un transfert de fichiers vers GitHub ?
+
+Je propose une prestation de diagnostic indépendante, utilisant des tests ciblés et, lorsque cela est pertinent, Treeporter.
+
+**La prestation comprend :**
+- L'analyse d'un problème précis lié au transfert de fichiers vers GitHub.
+- Jusqu'à trois tests ciblés, lorsque cela est techniquement possible.
+- Un rapport PDF présentant les tests réalisés, les résultats observés, les limites et les recommandations.
+- Un délai indicatif de livraison de 72 heures après confirmation du périmètre et réception des informations nécessaires.
+
+**Tarif : 20 €**
+
+**Limites :** aucune garantie de résolution, aucun audit de sécurité complet, aucune modification de code et aucune assistance illimitée. Aucun accès direct à ton dépôt n'est nécessaire pour cette prestation. Ne transmets jamais de mot de passe, de jeton d'accès ou d'autre secret.
+
+Les modalités de paiement et la disponibilité sont confirmées par écrit avant le début de la prestation.
+
+Cette prestation est distincte de Treeporter, qui reste un projet open source.
+
+——————————————————————————————————————————
+
 Suivez Wiyotl sur Instagram (https://www.instagram.com/wiyotl/), DEV Community (https://dev.to/wiyotl) et Github.
 
-Communite sur Reddit:
+Communauté sur Reddit:
 https://www.reddit.com/r/wiyotltools_dev/
 
+——————————————————————————————————————————
 
 Wiyotl est une marque deposée ; interdiction de réutiliser sans l'accord du créateur.
