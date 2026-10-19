@@ -231,10 +231,36 @@ https://<your-account>.github.io/<repo-name>/
 Open it in **Safari on the iPhone**, then select **Share → Add to Home Screen** to install it as a PWA —
 this time over full HTTPS, so the service worker is active (unlike the local network test).
 
+——————————————————————————————————————————
+
+## 🛠️ GitHub Transfer Diagnostic — €20
+
+Experiencing a specific issue when transferring files to GitHub?
+
+I offer an independent diagnostic service using targeted tests and, where relevant, Treeporter.
+
+**What's included:**
+- Analysis of one specific file-transfer issue related to GitHub.
+- Up to three targeted tests, where technically possible.
+- A PDF report describing the tests performed, observed results, limitations, and recommendations.
+- An indicative 72-hour delivery time after the scope is confirmed and the required information is received.
+
+**Price: €20**
+
+**Limitations:** no guaranteed resolution, full security audit, code changes, or unlimited support. Direct access to your repository is not required for this service. Never share passwords, access tokens, or other secrets.
+
+Availability and payment terms will be confirmed in writing before the service begins.
+
+This service is separate from Treeporter, which remains an open-source project.
+
+——————————————————————————————————————————
+
 Follow Wiyotl on Instagram (https://www.instagram.com/wiyotl/), DEV Community (https://dev.to/wiyotl), and GitHub.
 
 Community on Reddit:
 https://www.reddit.com/r/wiyotltools_dev/
+
+——————————————————————————————————————————
 
 🚀 Treeporter Pro
 
