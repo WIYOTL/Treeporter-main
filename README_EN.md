@@ -40,6 +40,8 @@ I offer a **GitHub diagnostic for €20**, including targeted tests and a PDF re
 
 **[View service details](#-github-transfer-diagnostic--20)**
 
+*For more information about this service, see the detailed description at the bottom of this page.*
+
 *Problem resolution is not guaranteed. Payment terms and availability are confirmed in writing before the service begins.*
 
 ---------- ------------------------------------------------------------------------------------------
