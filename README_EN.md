@@ -107,35 +107,37 @@ Treeporter remains open source. The features of this potential premium version h
 
 ## 📸 Discover Treeporter
 
-Learn about the main steps of Treeporter.
+Learn about the main steps using Treeporter.
 
 <img width="585" height="1266" alt="IMG_3879" src="https://github.com/user-attachments/assets/fde8f83a-d3c4-4bb9-a26d-9d18b60b08cd" />
 
+*Treeporter home screen.*
+
 <img width="585" height="1266" alt="IMG_3880" src="https://github.com/user-attachments/assets/f7aa294a-5ecc-48e6-be96-6a587f7fbba7" />
 
-<img width="941" height="907" alt="Capture d&#39;écran 2026-09-21 183838" src="https://github.com/user-attachments/assets/2e4ccc8e-f45c-4b15-b254-b64dfe3fe643" />
+*Connection interface and access to demo mode.*
 
-(after logging in)
+<img width="941" height="907" alt="Screenshot 2026-09-21 183838" src="https://github.com/user-attachments/assets/2e4ccc8e-f45c-4b15-b254-b64dfe3fe643" />
 
-<img width="932" height="892" alt="Capture d&#39;écran 2026-09-21 184159" src="https://github.com/user-attachments/assets/025b6d5c-8986-422d-b47c-c84dc77c19b1" />
+*After logging in: access to the transfer interface.*
 
-(after adding files. In this example, we used a `files/` folder containing an `index.html` file.
-You can also upload a .ZIP archive, a single file, or an entire folder (the project directory structure is preserved!!))
+<img width="932" height="892" alt="Screenshot 2026-09-21 184159" src="https://github.com/user-attachments/assets/025b6d5c-8986-422d-b47c-c84dc77c19b1" />
 
-<img width="915" height="927" alt="Capture d&#39;écran 2026-09-21 184731" src="https://github.com/user-attachments/assets/35109af9-f629-4793-9e49-6a4abbd84bb3" />
+*Adding files: Treeporter allows you to import individual files, entire folders, or ZIP archives.*
 
-(choose the GitHub repository: you must select the repository where you will upload and save your file or entire folder)
+<img width="915" height="927" alt="Screenshot 2026-09-21 184731" src="https://github.com/user-attachments/assets/35109af9-f629-4793-9e49-6a4abbd84bb3" />
 
-<img width="951" height="607" alt="Capture d&#39;écran 2026-09-21 185207" src="https://github.com/user-attachments/assets/896fe340-7e2f-436c-aa2b-a67cff31e06e" />
+*Choosing the destination GitHub repository.*
 
-(Check your decision: review what you really want to send one last time; otherwise, click the "Back" button and make any desired changes.)
+<img width="951" height="607" alt="Screenshot 2026-09-21 185207" src="https://github.com/user-attachments/assets/896fe340-7e2f-436c-aa2b-a67cff31e06e" />
 
-<img width="952" height="887" alt="Capture d&#39;écran 2026-09-21 185552" src="https://github.com/user-attachments/assets/a3915ab9-2e44-487e-9f75-0332dae51ff9" />
+*Verifying the content before starting the transfer.*
 
-(Pushing to GitHub: make sure your Personal Access Token has "Read and Write" permissions for "Contents." Otherwise, you will encounter an error and the push will fail.
-If the push is successful, check the repository you selected earlier, and you will have a quick backup of your entire project!!)
+<img width="952" height="887" alt="Screenshot 2026-09-21 185552" src="https://github.com/user-attachments/assets/a3915ab9-2e44-487e-9f75-0332dae51ff9" />
 
-## 1. Install and launch locally
+*Transfer result: Check the GitHub repository to confirm that the files were successfully uploaded.*
+
+## 1. 🧑‍💻 For developers: Launch Treeporter locally
 
 Prerequisites: Node.js 18+ and npm (on your Mac/PC).
 
@@ -146,60 +148,74 @@ npm run dev
 ```
 
 The terminal displays two addresses:
-- `Local: http://localhost:5173` → to be opened on the computer for a quick initial overview.
-- `Network: http://192.168.x.x:5173` → to be opened **in Safari on your iPhone**, provided that the iPhone and
-  the computer are on the **same Wi-Fi network**.
 
-⚠️ At this local network address (http, not https), you can test the entire interface and **demo mode**
-as usual, but the service worker (offline cache) will not register—this is a browser
-restriction, not a bug. For a full PWA installation, proceed to step 2.
+- `Local: http://localhost:5173` → Open this on your computer for a quick initial preview.
 
-## 2. Deploy for a true PWA installation (HTTPS)
+- `Network: http://192.168.x.x:5173` → to open **in Safari on your iPhone**, provided that the iPhone and
 
-Service workers and "Add to Home Screen" functionality require HTTPS to work properly. The simplest,
-free option that requires no server configuration is:
+the computer are on the **same Wi-Fi network**.
+
+⚠️ On this local network address (http, not https), you can test the entire interface and **demo mode** normally, but the service worker (offline cache) will not register — this is a browser limitation, not a bug. For a full PWA installation, proceed to step 2.
+
+## 2. Deploy a PWA version over HTTPS
+
+The service worker and proper integration into the home screen require HTTPS. The simplest,
+free, server-free method:
 
 ```bash
 npm run build
 ```
 
-This generates a `dist/` folder. Upload it to one of these free static hosting services:
-- **Cloudflare Pages** or **Netlify**: drag and drop the `dist` folder onto their web interface (no command line
-  required).
-- **Vercel** or **GitHub Pages**: these also work very well if you already use them.
-  
-You get a `https://....` URL—that’s the one you’ll use on your iPhone on a daily basis.
+This creates a `dist/` folder. Upload it to one of these free static file hosting services:
+
+- **Cloudflare Pages** or **Netlify**: drag and drop the `dist` folder onto their web interface (no command line required).
+
+- **Vercel** or **GitHub Pages**: also work very well if you're already using them.
+
+You'll get a URL `https://....` — this is the one you'll use daily on your iPhone.
 
 ## 3. Install on the iPhone Home Screen
 
 1. Open the URL (local or deployed) in **Safari**.
-2. **Share** button (square with an upward-pointing arrow).
-3. **Add to Home Screen** → Add.
 
-The Treeporter icon then appears as an app, in full screen, without an address bar.
+2. **Share** button (square with an upward arrow).
 
-## 4. Test without a GitHub account (demo mode)
+3. **On Home Screen** → Add.
 
-On the login screen, tap **"Try without a GitHub account (local demo)"**. 
-You can then test the entire workflow: adding files/folders, selecting a dummy repository and branch, previewing, 
-and uploading with a progress indicator. 
-The demo intentionally simulates a failure for about 1 in 6 files on the first attempt so that you can also test the **"Retry"** button. 
-Nothing is sent over the internet in demo mode.
+The Treeporter icon will then appear as a full-screen app, without an address bar.
+
+## 4. Try Treeporter without a GitHub account
+
+The demo mode lets you explore the interface without connecting a GitHub account.
+
+You can test adding files and folders, choose a mock repository and branch, examine the contents, and simulate a transfer with a progress bar.
+
+The demo intentionally simulates the failure of about one in six files on the first attempt to allow you to test the "Retry" function.
+
+**Important:** The demo mode simulates operations. No files are sent to GitHub or transmitted over the internet.
 
 ## 5. Real GitHub connection
 
-**Use a classic token ("Personal access token (classic)") for now** — *fine-grained* tokens
-currently return a 401 error in certain undiagnosed cases (see the note at the bottom of the
-section). Using a classic token, however, is stable and verified.
+**Uses a classic token ("Personal access token (classic)") for now** — *fine-grained* tokens currently return a 401 error in some undiagnosed cases (see the note at the bottom of this section). The operation with a classic token is stable and verified.
 
 1. On github.com → **Settings → Developer settings → Personal access tokens → Tokens (classic)**.
-2. Generate a token with the **`repo`** scope (full access to the private/public repositories you use).
-3. Paste this token into Treeporter on the login screen. It is stored only on your iPhone (in the
-   browser's local storage)—it is never sent anywhere other than `api.github.com`, never in a URL,
-   never in a log, and never committed to the repository.
 
-> **Note — fine-grained tokens (401 error):** diagnosis established in V1.2 — the `/user` endpoint that Treeporter
-> uses to validate a token works with fine-grained tokens and requires no specific
+2. Generate a token with the **`repo`** scope (full access to the private/public repositories you use).
+
+3. Paste this token into Treeporter on the login screen. It is stored in the browser and used to communicate with the GitHub API.
+
+> 🔐 **Security:**
+
+> - Never share your token or publish it to a GitHub repository.
+
+> - Grant only the permissions necessary for your use.
+
+> - If your token is exposed, revoke it immediately in your GitHub settings.
+
+> - Log out on a shared device and avoid saving a personal token there.
+
+> **Note — fine-grained tokens (401 known):** Diagnosis established in V1.2 — the `/user` endpoint that Treeporter
+> uses to validate a token works with fine-grained tokens and requires no special permission
 > permissions (verified against current GitHub documentation). Therefore, this is not an endpoint
 > compatibility issue on the Treeporter side. The most likely causes are: the token has expired (mandatory for fine-grained tokens,
 > 1-year maximum, unlike standard tokens which can be permanent), or it was copied incompletely (a fine-grained
