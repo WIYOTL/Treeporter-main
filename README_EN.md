@@ -54,11 +54,11 @@ I offer a **GitHub diagnostic for €20**, including targeted tests and a PDF re
 
 ## 💬 Give Feedback on Treeporter
 
-Your feedback helps us identify the top priorities for improving Treeporter.
+Your feedback helps me identify priorities for improving Treeporter.
 
-- 📝 **Share your experience:** [fill out the feedback form](https://chatform.in/f/treeporter-user-feedback-0cef1b).
-- 💡 **Suggest an idea or report an issue:** [join the GitHub discussions](https://github.com/Wiyotl/Treeporter-main/discussions/4).
-- 🐛 **Report a technical bug:** [open a GitHub issue](https://github.com/Wiyotl/Treeporter-main/issues).
+- 📝 **Share your experience:** [Fill out the feedback form](https://chatform.in/f/treeporter-user-feedback-0cef1b).
+- 💡 **Suggest an idea:** [Join the GitHub discussions](https://github.com/Wiyotl/Treeporter-main/discussions/4).
+- 🐛 **Report a technical issue:** [Open a GitHub issue](https://github.com/Wiyotl/Treeporter-main/issues).
 - 💬 **Join the Wiyotl community on Reddit:** [r/wiyotltools_dev](https://www.reddit.com/r/wiyotltools_dev/) to discuss Treeporter and other Wiyotl projects.
 
 ⭐ If you find Treeporter useful, you can also [star the GitHub repository](https://github.com/Wiyotl/Treeporter-main).
