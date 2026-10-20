@@ -84,29 +84,31 @@ Découvrez les principales étapes d'utilisation de Treeporter.
 
 <img width="585" height="1266" alt="IMG_3879" src="https://github.com/user-attachments/assets/fde8f83a-d3c4-4bb9-a26d-9d18b60b08cd" />
 
+*Écran d'accueil de Treeporter.*
+
 <img width="585" height="1266" alt="IMG_3880" src="https://github.com/user-attachments/assets/f7aa294a-5ecc-48e6-be96-6a587f7fbba7" />
+
+*Interface de connexion et accès au mode démo.*
 
 <img width="941" height="907" alt="Capture d&#39;écran 2026-09-21 183838" src="https://github.com/user-attachments/assets/2e4ccc8e-f45c-4b15-b254-b64dfe3fe643" />
 
-(après la connexion)
+*Après la connexion : accès à l'interface de transfert.*
 
 <img width="932" height="892" alt="Capture d&#39;écran 2026-09-21 184159" src="https://github.com/user-attachments/assets/025b6d5c-8986-422d-b47c-c84dc77c19b1" />
 
-(après l'ajout de fichiers. Dans cet exemple, on a pris un dossier files/ avec un fichier index.html.
-Vou pouvez aussi envoyer une archive .ZIP, un fichier seul ou un dossier complet (l'arborescence du projet est conservée !!)
+*Ajout de fichiers : Treeporter permet d'importer des fichiers individuels, des dossiers complets ou des archives ZIP.*
 
 <img width="915" height="927" alt="Capture d&#39;écran 2026-09-21 184731" src="https://github.com/user-attachments/assets/35109af9-f629-4793-9e49-6a4abbd84bb3" />
 
-(choisissez le dépôt GitHub : vous devez choisir le dépôt dans lequel vous allez envoyer et sauvegarder votre fichier ou dossier complet)
+*Choix du dépôt GitHub de destination.*
 
 <img width="951" height="607" alt="Capture d&#39;écran 2026-09-21 185207" src="https://github.com/user-attachments/assets/896fe340-7e2f-436c-aa2b-a67cff31e06e" />
 
-(vérifiez votre decision : vérifiez ce que vous voulez vraiment envoyer une dernière fois, sinon cliquez sur le bouton "Retour" et modifiez ce que vous voulez)
+*Vérification du contenu avant de lancer le transfert.*
 
 <img width="952" height="887" alt="Capture d&#39;écran 2026-09-21 185552" src="https://github.com/user-attachments/assets/a3915ab9-2e44-487e-9f75-0332dae51ff9" />
 
-(envoie vers GitHub : vérifiez bien que votre Personal-Access Token possède Contents : "Read and Write". Sinon, vous aurez une erreur et l'envoie ne s'effectuera pas.
-Si l'envoie s'effectue correctement, vérifiez votre depot que vous avez choisi précédemment et vous aurez une sauvegarde rapide de tout votre projet !!)
+*Résultat du transfert : vérifiez le dépôt GitHub pour confirmer que les fichiers ont bien été envoyés.*
 
 ## 1. Installer et lancer en local
 
