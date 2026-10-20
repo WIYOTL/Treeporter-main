@@ -61,7 +61,20 @@ ou, cliquez sur ce lien : https://qrco.de/bh0fIP et laisse des étoiles et un co
 
 -------------------------------------------------------------------------------------------------------------------
 
-Treeporter Pro — Prochainement - Une version premium est à l'étude. Fonctionnalités en cours d'évaluation : - Synchronisation automatique - Comptes GitHub multiples - Gestion de projet avancée Intéressé ? Ouvrez une « issue » ou contactez moi.
+## 🚀 Treeporter Pro — À l'étude
+
+Une version premium de Treeporter est à l'étude. Aucune de ces fonctionnalités n'est annoncée comme disponible à ce jour.
+
+Les pistes envisagées comprennent :
+- La synchronisation automatique.
+- La gestion de plusieurs comptes GitHub.
+- Des outils avancés de gestion de projet.
+
+Ces fonctionnalités restent à évaluer et peuvent évoluer.
+
+**Une suggestion ?** Ouvre une [issue GitHub](https://github.com/Wiyotl/Treeporter-main/issues) pour partager tes idées.
+
+Treeporter reste open source. Les fonctionnalités de cette éventuelle version premium ne sont pas encore définies.
 
 --------------------------------------------------------------------------------------------------------------------
 
