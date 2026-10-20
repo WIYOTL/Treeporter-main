@@ -1,27 +1,69 @@
-<img width="192" height="192" alt="icon-192" src="https://github.com/user-attachments/assets/ea745944-d66c-4704-87ea-ded9fbe4d2a0" />
-# Treeporter — transfer zone from any device → GitHub (V2.0.0)
+<img width="192" height="192" alt="Treeporter logo" src="https://github.com/user-attachments/assets/ea745944-d66c-4704-87ea-ded9fbe4d2a0" />
 
-Mobile-first PWA: add files/folders from the iPhone's **Files** app (preserving the directory structure)
-and push them to a GitHub repository in **a single atomic commit** via the Git Data API.
+# Treeporter — Simple. Fast. Treeporter.
 
-## Downloads
+**Upload your files to GitHub without complex Git commands or a terminal.**
 
-- 🌐 Web Version: https://wiyotl.github.io/Treeporter-main/
-- 🍎 macOS Pre-Release: https://github.com/Wiyotl/Treeporter-main/releases
+Treeporter is an open-source web app that simplifies
+the process of uploading files, entire folders, and ZIP archives to
+a GitHub repository, thanks to a simple and accessible interface.
 
------------------------------------------------------------------------------
+- 📁 Upload individual files or entire folders.
+- 🗜️ Import ZIP archives.
+- 🌳 Preserve your file directory structure.
+- 📱 Use Treeporter on any compatible device.
+- ⚡ Streamline your GitHub workflow without using the terminal.
 
-## 💬 Feedback
+### 🚀 Try Treeporter
 
-Your feedback helps improve Treeporter!
+**[Open the demo](https://wiyotl.github.io/Treeporter-main/)**
 
-Have you tried Treeporter? Share your experience, report difficulties, and suggest features for future versions.
+Want to upload your own files?
+Connect your GitHub account to perform real uploads.
 
-👉 **[Share your feedback]: https://chatform.in/f/treeporter-user-feedback-0cef1b**
+Treeporter is open source and available for free.
 
-You can also share suggestions and discuss ideas in [GitHub Discussions]: https://github.com/WIYOTL/Treeporter-main/discussions/4.
+**Simple. Fast. Treeporter.**
 
-----------------------------------------------------------------------------------------------
+---------------------- ------------------------------------------------------------------------------
+
+## 🛠️ Need help with GitHub?
+
+Are you experiencing a specific issue when transferring files to GitHub?
+
+I offer a **GitHub diagnostic for €20**, including targeted tests and a PDF report presenting the results and recommendations.
+
+- 💶 **Price: €20**
+- 🔎 Up to three targeted tests, when technically feasible.
+- 📄 A PDF report with results, limitations, and recommendations.
+- ⏱️ Estimated turnaround time: 72 hours after confirmation of the scope and receipt of the necessary information.
+
+**[View service details](#-diagnostic-github--20-)**
+
+*Problem resolution is not guaranteed. Payment terms and availability are confirmed in writing before the service begins.*
+
+---------- ------------------------------------------------------------------------------------------
+
+## 📥 Downloads
+
+- 🌐 [Web Version](https://wiyotl.github.io/Treeporter-main/)
+- 🍎 [macOS Preview](https://github.com/Wiyotl/Treeporter-main/releases)
+- 💻 [Source Code](https://github.com/Wiyotl/Treeporter-main)
+
+-----------------------------------------------------------------------------------------------------
+
+## 💬 Give Feedback on Treeporter
+
+Your feedback helps us identify the top priorities for improving Treeporter.
+
+- 📝 **Share your experience:** [fill out the feedback form](https://chatform.in/f/treeporter-user-feedback-0cef1b).
+- 💡 **Suggest an idea or report an issue:** [join the GitHub discussions](https://github.com/Wiyotl/Treeporter-main/discussions/4).
+- 🐛 **Report a technical bug:** [open a GitHub issue](https://github.com/Wiyotl/Treeporter-main/issues).
+- 💬 **Join the Wiyotl community on Reddit:** [r/wiyotltools_dev](https://www.reddit.com/r/wiyotltools_dev/) to discuss Treeporter and other Wiyotl projects.
+
+⭐ If you find Treeporter useful, you can also [star the GitHub repository](https://github.com/Wiyotl/Treeporter-main).
+
+-------------------------------------------------------------------------- -----------------------------------
 
 github
 file-transfer
@@ -31,27 +73,41 @@ productivity
 opensource
 cross-platform
 
-⭐ If you find Treeporter useful, please consider starring it on GitHub.
+----------------------------------------------------- --------------------------------------------------------------
 
-or click on this link : https://qrco.de/bh0fIP and leave a rating and a comment!
+## 🚀 Treeporter Pro — Under Consideration
 
--------------------------------------------------------------------------------------------------
+A premium version of Treeporter is under consideration. None of these features have been announced as available at this time.
 
-Treeporter Pro — Coming Soon
+Possible features under consideration include:
+- Automatic synchronization.
+- Support for multiple GitHub accounts.
+- Advanced project management tools.
 
-A premium version is being considered.
+These features are still being evaluated and may change.
 
-Features under evaluation:
-- Automatic sync
-- Multiple GitHub accounts
-- Advanced project management
+**Have a suggestion?** Open a [GitHub issue](https://github.com/Wiyotl/Treeporter-main/issues) to share your ideas.
 
-Interested? Open an issue or contact me.
+Treeporter remains open source. The features of this potential premium version have not yet been defined.
 
+--------------------------------------------------------------------------------------- -----------------------------
 
-------------------------------------------------------------------------------------------------------------------------
+## ✨ Features
 
-Screenshots :
+- 📁 **Files and Folders** — Upload individual files or entire folders.
+- 🗜️ **ZIP Archives** — Import a ZIP archive and preserve its directory structure.
+- 🌳 **Preserved Structure** — Keep your project’s file organization intact.
+- 🔀 **Conflict Management** — Replace, ignore, or rename files that already exist.
+- 📊 **Transfer Progress** — Track the progress of your upload.
+- 🔁 **Retry** — Try again with files that failed to upload.
+- 🧪 **Demo mode** — Explore the interface without connecting a GitHub account.
+- 📱 **Web interface** — Use Treeporter from a compatible device.
+
+------------ ------------------------------------------------------------------------------------------------
+
+## 📸 Discover Treeporter
+
+Learn about the main steps of Treeporter.
 
 <img width="585" height="1266" alt="IMG_3879" src="https://github.com/user-attachments/assets/fde8f83a-d3c4-4bb9-a26d-9d18b60b08cd" />
 
