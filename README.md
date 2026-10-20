@@ -171,9 +171,17 @@ section). Le fonctionnement avec un token classique, lui, est stable et vérifi�
 
 1. Sur github.com → **Settings → Developer settings → Personal access tokens → Tokens (classic)**.
 2. Génère un token avec le scope **`repo`** (accès complet aux dépôts privés/publics que tu utilises).
-3. Colle ce token dans Treeporter à l'écran de connexion. Il reste stocké uniquement sur ton iPhone (dans le
-   stockage local du navigateur) — il n'est jamais envoyé ailleurs qu'à `api.github.com`, jamais dans une URL,
-   jamais dans un log, jamais commité dans le dépôt.
+3. Colle ce token dans Treeporter à l'écran de connexion. Il est stocké dans le navigateur et utilisé pour communiquer avec l'API GitHub.
+
+> 🔐 **Sécurité :**
+
+> - Ne partage jamais ton jeton et ne le publie jamais dans un dépôt GitHub.
+
+> - Accorde uniquement les permissions nécessaires à ton usage.
+
+> - Si ton jeton est exposé, révoque-le immédiatement dans les paramètres GitHub.
+
+> - Déconnecte-toi sur un appareil partagé et évite d'y enregistrer un jeton personnel.
 
 > **Note — tokens fine-grained (401 connu) :** diagnostic établi en V1.2 — l'endpoint `/user` que Treeporter
 > utilise pour valider un token fonctionne avec les tokens fine-grained et ne nécessite aucune permission
