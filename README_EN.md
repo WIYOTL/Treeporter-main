@@ -38,7 +38,7 @@ I offer a **GitHub diagnostic for €20**, including targeted tests and a PDF re
 - 📄 A PDF report with results, limitations, and recommendations.
 - ⏱️ Estimated turnaround time: 72 hours after confirmation of the scope and receipt of the necessary information.
 
-**[View service details](#-diagnostic-github--20-)**
+**[View service details](#-github-transfer-diagnostic--20)**
 
 *Problem resolution is not guaranteed. Payment terms and availability are confirmed in writing before the service begins.*
 
