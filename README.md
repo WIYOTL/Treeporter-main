@@ -110,7 +110,7 @@ Découvrez les principales étapes d'utilisation de Treeporter.
 
 *Résultat du transfert : vérifiez le dépôt GitHub pour confirmer que les fichiers ont bien été envoyés.*
 
-## 🧑‍💻 Pour les développeurs : lancer Treeporter en local
+## 1. 🧑‍💻 Pour les développeurs : lancer Treeporter en local
 
 Prérequis : Node.js 18+ et npm (sur ton Mac/PC).
 
