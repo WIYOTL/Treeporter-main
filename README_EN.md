@@ -218,7 +218,7 @@ The demo intentionally simulates the failure of about one in six files on the fi
 
 > **Note — fine-grained tokens (401 known):** Diagnosis established in V1.2 — the `/user` endpoint that Treeporter
 > uses to validate a token works with fine-grained tokens and requires no special permission
-> permissions (verified against current GitHub documentation). Therefore, this is not an endpoint
+> (verified against current GitHub documentation). Therefore, this is not an endpoint
 > compatibility issue on the Treeporter side. The most likely causes are: the token has expired (mandatory for fine-grained tokens,
 > 1-year maximum, unlike standard tokens which can be permanent), or it was copied incompletely (a fine-grained
 > token is ~93+ characters long compared to ~40 for a standard one, making it harder to select the whole thing
