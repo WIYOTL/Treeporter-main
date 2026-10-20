@@ -110,7 +110,7 @@ Découvrez les principales étapes d'utilisation de Treeporter.
 
 *Résultat du transfert : vérifiez le dépôt GitHub pour confirmer que les fichiers ont bien été envoyés.*
 
-## 1. Installer et lancer en local
+## 🧑‍💻 Pour les développeurs : lancer Treeporter en local
 
 Prérequis : Node.js 18+ et npm (sur ton Mac/PC).
 
@@ -129,7 +129,7 @@ Le terminal affiche deux adresses :
 normalement, mais le service worker (cache hors-ligne) ne s'enregistrera pas — c'est une restriction des
 navigateurs, pas un bug. Pour une vraie installation PWA complète, passe à l'étape 2.
 
-## 2. Déployer pour une vraie installation PWA (HTTPS)
+## 2. Déployer une version PWA en HTTPS
 
 Le service worker et l'ajout à l'écran d'accueil dans de bonnes conditions demandent du HTTPS. Le plus simple,
 gratuit, sans configuration serveur :
