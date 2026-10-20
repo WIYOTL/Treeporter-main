@@ -42,10 +42,9 @@ Tes retours permettent d'identifier les améliorations prioritaires de Treeporte
 - 📝 **Partager ton expérience :** [répondre au formulaire de feedback](https://chatform.in/f/treeporter-user-feedback-0cef1b).
 - 💡 **Proposer une idée ou signaler un problème :** [participer aux discussions GitHub](https://github.com/Wiyotl/Treeporter-main/discussions/4).
 - 🐛 **Signaler un bug technique :** [ouvrir une issue GitHub](https://github.com/Wiyotl/Treeporter-main/issues).
+- 💬 **Rejoins la communauté Wiyotl sur Reddit :** [r/wiyotltools_dev](https://www.reddit.com/r/wiyotltools_dev/) pour discuter de Treeporter et des autres projets Wiyotl.
 
 ⭐ Si Treeporter t'est utile, tu peux aussi [ajouter une étoile au dépôt GitHub](https://github.com/Wiyotl/Treeporter-main).
-
-💬 **Rejoins la communauté Wiyotl sur Reddit :** [r/wiyotltools_dev](https://www.reddit.com/r/wiyotltools_dev/) pour discuter de Treeporter et des autres projets Wiyotl.
 
 -------------------------------------------------------------------------------------------------------------
 
