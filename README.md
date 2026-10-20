@@ -153,12 +153,15 @@ Tu obtiens une URL `https://....` — c'est celle-là que tu utiliseras au quoti
 
 L'icône Treeporter apparaît alors comme une app, en plein écran, sans barre d'adresse.
 
-## 4. Tester sans compte GitHub (mode démo)
+## 4. Essayer Treeporter sans compte GitHub
 
-Sur l'écran de connexion, appuie sur **« Essayer sans compte GitHub (démo locale) »**. Tu peux alors tester tout
-le parcours : ajout de fichiers/dossiers, choix d'un dépôt et d'une branche fictifs, aperçu, envoi avec
-progression. La démo simule volontairement l'échec d'environ 1 fichier sur 6 la première fois, pour que tu
-puisses aussi tester le bouton **« Réessayer »**. Rien n'est envoyé sur internet en mode démo.
+Le mode démo permet de découvrir l'interface sans connecter de compte GitHub.
+
+Tu peux tester l'ajout de fichiers et de dossiers, choisir un dépôt et une branche fictifs, examiner le contenu et simuler un transfert avec une barre de progression.
+
+La démo simule volontairement l'échec d'environ un fichier sur six lors du premier essai afin de permettre de tester la fonction « Réessayer ».
+
+**Important :** le mode démo simule les opérations. Aucun fichier n'est envoyé vers GitHub ou transmis sur Internet.
 
 ## 5. Connexion GitHub réelle
 
