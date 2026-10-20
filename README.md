@@ -35,15 +35,15 @@ Treeporter est open source et disponible gratuitement.
 
 -----------------------------------------------------------------------------------------------------
 
-# 💬 Vos commentaires sont précieux
+## 💬 Donner son avis sur Treeporter
 
-Vos commentaires nous aident à améliorer Treeporter !
+Tes retours permettent d'identifier les améliorations prioritaires de Treeporter.
 
-Avez-vous déjà utilisé Treeporter ? Partagez votre expérience, signalez les problèmes rencontrés et suggérez des fonctionnalités pour les prochaines versions.
+- 📝 **Partager ton expérience :** [répondre au formulaire de feedback](https://chatform.in/f/treeporter-user-feedback-0cef1b).
+- 💡 **Proposer une idée ou signaler un problème :** [participer aux discussions GitHub](https://github.com/Wiyotl/Treeporter-main/discussions/4).
+- 🐛 **Signaler un bug technique :** [ouvrir une issue GitHub](https://github.com/Wiyotl/Treeporter-main/issues).
 
-👉 [Partagez vos commentaires] : https://chatform.in/f/treeporter-user-feedback-0cef1b
-
-Vous pouvez également partager vos suggestions et échanger des idées sur [GitHub Discussions]: https://github.com/WIYOTL/Treeporter-main/discussions/4.
+⭐ Si Treeporter t'est utile, tu peux aussi [ajouter une étoile au dépôt GitHub](https://github.com/Wiyotl/Treeporter-main).
 
 -------------------------------------------------------------------------------------------------------------
 
