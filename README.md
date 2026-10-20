@@ -4,9 +4,7 @@
 
 **Envoyez vos fichiers vers GitHub sans commandes Git complexes ni terminal.**
 
-Treeporter est une application web open source qui simplifie
-l'envoi de fichiers, de dossiers entiers et d'archives ZIP vers
-un dépôt GitHub, grâce à une interface simple et accessible.
+Treeporter est une application web open source qui simplifie l'envoi de fichiers, de dossiers entiers et d'archives ZIP vers un dépôt GitHub, grâce à une interface simple et accessible.
 
 - 📁 Envoyez des fichiers individuels ou des dossiers complets.
 - 🗜️ Importez des archives ZIP.
