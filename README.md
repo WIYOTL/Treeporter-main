@@ -1,16 +1,37 @@
-<img width="192" height="192" alt="icon-192" src="https://github.com/user-attachments/assets/ea745944-d66c-4704-87ea-ded9fbe4d2a0" />
-# Treeporter — zone de transfert depuis n'importe quel appareil → GitHub (V2.0.0)
+<img width="192" height="192" alt="Treeporter logo" src="https://github.com/user-attachments/assets/ea745944-d66c-4704-87ea-ded9fbe4d2a0" />
 
-PWA mobile-first : ajoute des fichiers/dossiers depuis l'app **Fichiers** de l'iPhone (arborescence conservée)
-et envoie-les vers un dépôt GitHub en **un seul commit atomique**, via la Git Data API.
+# Treeporter — Simple. Rapide. Treeporter.
 
-------------------------------------------------------------------------------------------------------------
+**Envoyez vos fichiers vers GitHub sans commandes Git complexes ni terminal.**
 
-Téléchargements
+Treeporter est une application web open source qui simplifie
+l'envoi de fichiers, de dossiers entiers et d'archives ZIP vers
+un dépôt GitHub, grâce à une interface simple et accessible.
 
-🌐 Version Web : https://wiyotl.github.io/Treeporter-main/
+- 📁 Envoyez des fichiers individuels ou des dossiers complets.
+- 🗜️ Importez des archives ZIP.
+- 🌳 Conservez l'arborescence de vos fichiers.
+- 📱 Utilisez Treeporter depuis un appareil compatible.
+- ⚡ Simplifiez votre workflow GitHub sans passer par le terminal.
 
-🍎 Préversion macOS : https://github.com/Wiyotl/Treeporter-main/releases
+### 🚀 Essayez Treeporter
+
+**[Ouvrir la démo](https://wiyotl.github.io/Treeporter-main/)**
+
+Vous souhaitez envoyer vos propres fichiers ?
+Connectez votre compte GitHub pour effectuer de véritables transferts.
+
+Treeporter est open source et disponible gratuitement.
+
+**Simple. Rapide. Treeporter.**
+
+---
+
+## 📥 Téléchargements
+
+- 🌐 [Version Web](https://wiyotl.github.io/Treeporter-main/)
+- 🍎 [Préversion macOS](https://github.com/Wiyotl/Treeporter-main/releases)
+- 💻 [Code source](https://github.com/Wiyotl/Treeporter-main)
 
 -----------------------------------------------------------------------------------------------------
 
