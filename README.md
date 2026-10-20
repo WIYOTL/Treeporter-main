@@ -45,6 +45,8 @@ Tes retours permettent d'identifier les améliorations prioritaires de Treeporte
 
 ⭐ Si Treeporter t'est utile, tu peux aussi [ajouter une étoile au dépôt GitHub](https://github.com/Wiyotl/Treeporter-main).
 
+💬 **Rejoins la communauté Wiyotl sur Reddit :** [r/wiyotltools_dev](https://www.reddit.com/r/wiyotltools_dev/) pour discuter de Treeporter et des autres projets Wiyotl.
+
 -------------------------------------------------------------------------------------------------------------
 
 github
@@ -54,10 +56,6 @@ developer-tools
 productivity
 opensource
 cross-platform
-
-⭐ Si Treeporter vous est utile, pensez à laisser une étoile sur GitHub.
-
-ou, cliquez sur ce lien : https://qrco.de/bh0fIP et laisse des étoiles et un commentaire !
 
 -------------------------------------------------------------------------------------------------------------------
 
