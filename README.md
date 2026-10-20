@@ -40,6 +40,8 @@ Je propose un **diagnostic GitHub à 20 €**, comprenant des tests ciblés et u
 
 **[Consulter les détails de la prestation](#-diagnostic-github--20-)**
 
+*Pour plus d'informations sur cette prestation, consulte la description détaillée en bas de page.*
+
 *La résolution du problème n'est pas garantie. Les modalités de paiement et la disponibilité sont confirmées par écrit avant le début de la prestation.*
 
 ----------------------------------------------------------------------------------------------------
