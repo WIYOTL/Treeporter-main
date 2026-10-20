@@ -65,7 +65,22 @@ Treeporter Pro — Prochainement - Une version premium est à l'étude. Fonction
 
 --------------------------------------------------------------------------------------------------------------------
 
-Screenshots :
+## ✨ Fonctionnalités
+
+- 📁 **Fichiers et dossiers** — Envoyez des fichiers individuels ou des dossiers complets.
+- 🗜️ **Archives ZIP** — Importez une archive et conservez son arborescence.
+- 🌳 **Structure préservée** — Gardez l'organisation des fichiers de votre projet.
+- 🔀 **Gestion des conflits** — Remplacez, ignorez ou renommez les fichiers déjà présents.
+- 📊 **Progression des transferts** — Suivez l'avancement de l'envoi.
+- 🔁 **Nouvelle tentative** — Réessayez les fichiers dont l'envoi a échoué.
+- 🧪 **Mode démo** — Découvrez l'interface sans connecter de compte GitHub.
+- 📱 **Interface web** — Utilisez Treeporter depuis un appareil compatible.
+
+------------------------------------------------------------------------------------------------------------
+
+## 📸 Découvrez Treeporter
+
+Découvrez les principales étapes d'utilisation de Treeporter.
 
 <img width="585" height="1266" alt="IMG_3879" src="https://github.com/user-attachments/assets/fde8f83a-d3c4-4bb9-a26d-9d18b60b08cd" />
 
