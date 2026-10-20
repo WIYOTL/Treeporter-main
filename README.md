@@ -25,7 +25,24 @@ Treeporter est open source et disponible gratuitement.
 
 **Simple. Rapide. Treeporter.**
 
----
+----------------------------------------------------------------------------------------------------
+
+## 🛠️ Besoin d'aide avec GitHub ?
+
+Tu rencontres un problème précis lors d'un transfert de fichiers vers GitHub ?
+
+Je propose un **diagnostic GitHub à 20 €**, comprenant des tests ciblés et un rapport PDF présentant les résultats et les recommandations.
+
+- 💶 **Tarif : 20 €**
+- 🔎 Jusqu'à trois tests ciblés, lorsque cela est techniquement possible.
+- 📄 Un rapport PDF avec les résultats, les limites et les recommandations.
+- ⏱️ Délai indicatif : 72 heures après confirmation du périmètre et réception des informations nécessaires.
+
+**[Consulter les détails de la prestation](#-diagnostic-github--20-)**
+
+*La résolution du problème n'est pas garantie. Les modalités de paiement et la disponibilité sont confirmées par écrit avant le début de la prestation.*
+
+----------------------------------------------------------------------------------------------------
 
 ## 📥 Téléchargements
 
