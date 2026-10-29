@@ -10,8 +10,6 @@ Les informations proviennent des fichiers README.md (français) et README_EN.md 
 
 ## V2.1.0
 
-_Note : la publication officielle de V2.1.0 n'est pas confirmée par un tag ou une release GitHub ; cette section reprend les changements documentés dans les README._
-
 ### Ajout
 - Internationalisation complète : interface disponible en français et en anglais, avec un sélecteur de langue FR/EN.
 - Authentification GitHub : prise en charge des Personal Access Tokens classic et fine-grained, avec détection automatique du type de token et affichage d'un badge correspondant.
