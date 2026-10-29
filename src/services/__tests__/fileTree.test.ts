@@ -8,6 +8,12 @@ import {
   joinTargetPath,
   resolveRenamedPath,
   LARGE_FILE_THRESHOLD_BYTES,
+  MAX_GITHUB_FILE_SIZE_BYTES,
+  MAX_RECOMMENDED_COMMIT_SIZE_BYTES,
+  MAX_RECOMMENDED_FILE_COUNT_PER_COMMIT,
+  checkTransferLimits,
+  splitFilesIntoBatches,
+  calculateBatchCount,
 } from '../fileTree'
 
 // Petit helper pour simuler un fichier tel que fourni par un <input type="file">,
@@ -159,9 +165,11 @@ describe('formatBytes', () => {
     expect(formatBytes(0)).toBe('0 o')
     expect(formatBytes(500)).toBe('500 o')
     // Sous 10 unités, une décimale est affichée (ex. "1.0 Ko" plutôt que "1 Ko")
-    expect(formatBytes(1024)).toBe('1.0 Ko')
-    expect(formatBytes(1024 * 1024)).toBe('1.0 Mo')
+    expect(formatBytes(1024)).toBe('1,0 Ko')
+    expect(formatBytes(1024 * 1024)).toBe('1,0 Mo')
     expect(formatBytes(15 * 1024)).toBe('15 Ko')
+    expect(formatBytes(1024, 'en')).toBe('1.0 KB')
+    expect(formatBytes(1536, 'en')).toBe('1.5 KB')
   })
 })
 
@@ -210,5 +218,216 @@ describe('resolveRenamedPath', () => {
   it('gère un fichier sans extension', () => {
     const existing = new Set(['LISEZMOI'])
     expect(resolveRenamedPath('LISEZMOI', existing)).toBe('LISEZMOI (2)')
+  })
+
+  describe('MAX_GITHUB_FILE_SIZE_BYTES', () => {
+    it('should export MAX_GITHUB_FILE_SIZE_BYTES as 100 MB', () => {
+      expect(MAX_GITHUB_FILE_SIZE_BYTES).toBe(100 * 1024 * 1024)
+    })
+
+    it('should mark files larger than 100 MB as isTooLarge and excluded', () => {
+      const largeFile = makeFile('huge.bin', 'x'.repeat(100 * 1024 * 1024 + 1))
+      Object.defineProperty(largeFile, 'size', { value: 100 * 1024 * 1024 + 1 })
+      const [docked] = filesToDocked([largeFile])
+      expect(docked.isTooLarge).toBe(true)
+      expect(docked.excluded).toBe(true)
+      expect(docked.excludeReason).toBe('file.exclude.githubLimit')
+    })
+
+    it('should not mark files at exactly 100 MB as too large', () => {
+      const exactFile = makeFile('exact.bin', 'x'.repeat(100 * 1024 * 1024))
+      Object.defineProperty(exactFile, 'size', { value: 100 * 1024 * 1024 })
+      const [docked] = filesToDocked([exactFile])
+      expect(docked.isTooLarge).toBe(false)
+      expect(docked.excluded).toBe(false)
+    })
+
+    it('should not mark files smaller than 100 MB as too large', () => {
+      const smallFile = makeFile('small.bin', 'x'.repeat(50 * 1024 * 1024))
+      Object.defineProperty(smallFile, 'size', { value: 50 * 1024 * 1024 })
+      const [docked] = filesToDocked([smallFile])
+      expect(docked.isTooLarge).toBe(false)
+      expect(docked.excluded).toBe(false)
+    })
+  })
+
+  describe('checkTransferLimits', () => {
+    it('should return correct limits for empty files', () => {
+      const limits = checkTransferLimits([])
+      expect(limits.totalSize).toBe(0)
+      expect(limits.fileCount).toBe(0)
+      expect(limits.hasTooLargeFiles).toBe(false)
+      expect(limits.exceedsCommitSize).toBe(false)
+      expect(limits.exceedsFileCount).toBe(false)
+      expect(limits.exceedsTotalSize).toBe(false)
+      expect(limits.batchCount).toBe(0)
+    })
+
+    it('should detect when total size exceeds recommended commit size', () => {
+      // Créer plusieurs fichiers dont la somme dépasse MAX_RECOMMENDED_COMMIT_SIZE_BYTES
+      // mais chacun est < MAX_GITHUB_FILE_SIZE_BYTES pour ne pas être exclu
+      const fileSizeUnderLimit = 90 * 1024 * 1024 // 90 Mo
+      const numFiles = Math.ceil(MAX_RECOMMENDED_COMMIT_SIZE_BYTES / fileSizeUnderLimit) + 1
+      const files = Array.from({ length: numFiles }, (_, i) =>
+        makeFile(`file${i}.bin`, 'x')
+      )
+      files.forEach(f => Object.defineProperty(f, 'size', { value: fileSizeUnderLimit }))
+
+      const dockedFiles = filesToDocked(files)
+
+      const limits = checkTransferLimits(dockedFiles)
+      expect(limits.totalSize).toBe(fileSizeUnderLimit * numFiles)
+      expect(limits.exceedsCommitSize).toBe(true)
+      expect(limits.exceedsFileCount).toBe(false)
+    })
+
+    it('should detect when file count exceeds recommended limit', () => {
+      const files = Array.from({ length: MAX_RECOMMENDED_FILE_COUNT_PER_COMMIT + 1 }, (_, i) =>
+        makeFile(`file${i}.txt`, 'x')
+      )
+      const dockedFiles = filesToDocked(files)
+
+      const limits = checkTransferLimits(dockedFiles)
+      expect(limits.fileCount).toBe(MAX_RECOMMENDED_FILE_COUNT_PER_COMMIT + 1)
+      expect(limits.exceedsFileCount).toBe(true)
+      expect(limits.exceedsCommitSize).toBe(false)
+    })
+
+    it('should detect when files contain too large files', () => {
+      const largeFile = makeFile('huge.bin', 'x')
+      Object.defineProperty(largeFile, 'size', { value: MAX_GITHUB_FILE_SIZE_BYTES + 1 })
+      const [docked] = filesToDocked([largeFile])
+
+      const limits = checkTransferLimits([docked])
+      expect(limits.hasTooLargeFiles).toBe(true)
+    })
+
+    it('should exclude excluded files from limits', () => {
+      const largeFile = makeFile('huge.bin', 'x')
+      Object.defineProperty(largeFile, 'size', { value: MAX_RECOMMENDED_COMMIT_SIZE_BYTES + 1 })
+      const [docked] = filesToDocked([largeFile])
+      // Marquer comme exclu
+      docked.excluded = true
+
+      const limits = checkTransferLimits([docked])
+      expect(limits.totalSize).toBe(0)
+      expect(limits.fileCount).toBe(0)
+      expect(limits.exceedsCommitSize).toBe(false)
+    })
+
+    it('should handle mixed files correctly', () => {
+      const normalFile = makeFile('normal.txt', 'x')
+      Object.defineProperty(normalFile, 'size', { value: 1024 })
+      const largeFile = makeFile('large.bin', 'x')
+      Object.defineProperty(largeFile, 'size', { value: MAX_GITHUB_FILE_SIZE_BYTES + 1 })
+
+      const dockedFiles = filesToDocked([normalFile, largeFile])
+
+      const limits = checkTransferLimits(dockedFiles)
+      expect(limits.totalSize).toBe(1024) // Seuls les fichiers non exclus sont comptés
+      expect(limits.fileCount).toBe(1)
+      expect(limits.hasTooLargeFiles).toBe(true) // Le fichier large est exclu mais détécté
+    })
+  })
+
+  describe('splitFilesIntoBatches', () => {
+    it('should return empty array for empty input', () => {
+      const batches = splitFilesIntoBatches([])
+      expect(batches).toEqual([])
+    })
+
+    it('should return single batch for files under limits', () => {
+      const files = Array.from({ length: 5 }, (_, i) =>
+        makeFile(`file${i}.txt`, 'x')
+      )
+      files.forEach(f => Object.defineProperty(f, 'size', { value: 1024 }))
+
+      const dockedFiles = filesToDocked(files)
+      const batches = splitFilesIntoBatches(dockedFiles)
+
+      expect(batches.length).toBe(1)
+      expect(batches[0].length).toBe(5)
+    })
+
+    it('should split files exceeding commit size limit', () => {
+      // Créer des fichiers de 90 Mo chacun (sous la limite de 100 Mo par fichier)
+      const fileSize = 90 * 1024 * 1024 // 90 Mo
+      const numFiles = 15 // 15 * 90 Mo = 1,35 Go > 1 Go
+
+      const files = Array.from({ length: numFiles }, (_, i) =>
+        makeFile(`file${i}.bin`, 'x')
+      )
+      files.forEach(f => Object.defineProperty(f, 'size', { value: fileSize }))
+
+      const dockedFiles = filesToDocked(files)
+      const batches = splitFilesIntoBatches(dockedFiles)
+
+      // Doit créer 2 batches : 10 fichiers (900 Mo) + 5 fichiers (450 Mo)
+      expect(batches.length).toBe(2)
+      expect(batches[0].length).toBe(11) // 11 * 90 Mo = 990 Mo < 1 Go
+      expect(batches[1].length).toBe(4) // 4 * 90 Mo = 360 Mo
+    })
+
+    it('should split files exceeding file count limit', () => {
+      const fileSize = 1024 // 1 Ko
+      const numFiles = MAX_RECOMMENDED_FILE_COUNT_PER_COMMIT + 100 // 1100 fichiers
+
+      const files = Array.from({ length: numFiles }, (_, i) =>
+        makeFile(`file${i}.txt`, 'x')
+      )
+      files.forEach(f => Object.defineProperty(f, 'size', { value: fileSize }))
+
+      const dockedFiles = filesToDocked(files)
+      const batches = splitFilesIntoBatches(dockedFiles)
+
+      // Doit créer 2 batches : 1000 + 100 fichiers
+      expect(batches.length).toBe(2)
+      expect(batches[0].length).toBe(MAX_RECOMMENDED_FILE_COUNT_PER_COMMIT)
+      expect(batches[1].length).toBe(100)
+    })
+
+    it('should exclude files from batches', () => {
+      const normalFile = makeFile('normal.txt', 'x')
+      Object.defineProperty(normalFile, 'size', { value: 1024 })
+      const largeFile = makeFile('large.bin', 'x')
+      Object.defineProperty(largeFile, 'size', { value: MAX_GITHUB_FILE_SIZE_BYTES + 1 })
+
+      const dockedFiles = filesToDocked([normalFile, largeFile])
+      const batches = splitFilesIntoBatches(dockedFiles)
+
+      // Le fichier large est exclu, donc un seul batch avec le fichier normal
+      expect(batches.length).toBe(1)
+      expect(batches[0].length).toBe(1)
+      expect(batches[0][0].relativePath).toBe('normal.txt')
+    })
+  })
+
+  describe('calculateBatchCount', () => {
+    it('should return 0 for empty files', () => {
+      expect(calculateBatchCount([])).toBe(0)
+    })
+
+    it('should return 1 for files under limits', () => {
+      const files = Array.from({ length: 5 }, (_, i) =>
+        makeFile(`file${i}.txt`, 'x')
+      )
+      files.forEach(f => Object.defineProperty(f, 'size', { value: 1024 }))
+
+      const dockedFiles = filesToDocked(files)
+      expect(calculateBatchCount(dockedFiles)).toBe(1)
+    })
+
+    it('should return correct count for files exceeding commit size', () => {
+      const fileSize = 90 * 1024 * 1024 // 90 Mo
+      const numFiles = 15 // 15 * 90 Mo = 1,35 Go > 1 Go
+
+      const files = Array.from({ length: numFiles }, (_, i) =>
+        makeFile(`file${i}.bin`, 'x')
+      )
+      files.forEach(f => Object.defineProperty(f, 'size', { value: fileSize }))
+
+      const dockedFiles = filesToDocked(files)
+      expect(calculateBatchCount(dockedFiles)).toBe(2)
+    })
   })
 })

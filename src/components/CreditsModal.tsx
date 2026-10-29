@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n/I18nProvider'
+
 interface Props {
   open: boolean
   onClose: () => void
@@ -7,6 +9,8 @@ export function CreditsModal({ open, onClose }: Props) {
   if (!open) {
     return null
   }
+
+  const { t } = useI18n()
 
   return (
     <div
@@ -27,49 +31,47 @@ export function CreditsModal({ open, onClose }: Props) {
               className="section-label"
               style={{ margin: 0 }}
             >
-              À propos
+              {t('credits.about')}
             </div>
 
-            <h2 id="credits-title">Crédits</h2>
+            <h2 id="credits-title">{t('credits.title')}</h2>
           </div>
 
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={onClose}
-            aria-label="Fermer les crédits"
+            aria-label={t('credits.close')}
           >
-            Fermer
+            {t('common.close')}
           </button>
         </div>
 
         <p className="credits-description">
-          Treeporter est une application progressive qui facilite
-          l’envoi de fichiers depuis n'importe quel appareil vers un dépôt GitHub,
-          avec aperçu, gestion des conflits et création de branches.
+          {t('credits.description')}
         </p>
 
         <div className="credits-list">
           <p>
-            <strong>Création et développement</strong>
+            <strong>{t('credits.creation')}</strong>
             <span>Wiyotl</span>
           </p>
 
           <p>
-            <strong>Marque</strong>
+            <strong>{t('credits.brand')}</strong>
             <span>Wiyotl</span>
           </p>
 
           <p>
-            <strong>Wiyotl Applications</strong>
+            <strong>{t('credits.technology')}</strong>
             <span>
               React, TypeScript, Vite, VitePWA, GitHub API, JSZip
             </span>
           </p>
 
           <p>
-            <strong>Version</strong>
-            <span>2.0.0</span>
+            <strong>{t('credits.version')}</strong>
+            <span>2.1.0</span>
           </p>
         </div>
       </div>

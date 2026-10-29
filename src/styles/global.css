@@ -192,6 +192,18 @@ select {
   margin-top: 6px;
 }
 
+.language-switcher {
+  display: inline-flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.language-switcher-option[aria-pressed='true'] {
+  color: var(--teal);
+  font-weight: 700;
+}
+
 .app-footer-link {
   appearance: none;
   border: 0;

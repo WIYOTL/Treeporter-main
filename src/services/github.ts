@@ -1,8 +1,10 @@
-import type { RepoRef, BranchRef, UploadItem, UploadStep, SendResult } from '../types'
+import type { RepoRef, BranchRef, DockedFile, UploadItem, UploadStep, SendResult } from '../types'
 import type { GitProvider, CommitPlan, CommitCallbacks, PullRequestResult } from './gitProvider'
 import { GitDockError } from './gitProvider'
 import { fileToBase64 } from './base64'
-import { joinTargetPath } from './fileTree'
+import { joinTargetPath, splitFilesIntoBatches, MAX_RECOMMENDED_COMMIT_SIZE_BYTES, MAX_RECOMMENDED_FILE_COUNT_PER_COMMIT } from './fileTree'
+import { messageFromError } from '../i18n/message'
+import type { MessageDescriptor } from '../i18n/message'
 import { detectTokenType } from './tokenType'
 
 const API = 'https://api.github.com'
@@ -23,30 +25,168 @@ function deriveErrorMessage(
   status: number,
   statusText: string,
   bodyMessage: string | undefined,
+  headers: Pick<Headers, 'get'>,
   cleanToken: string,
-  rateLimitRemaining: string | null
-): string {
-  let message = bodyMessage || `${status} ${statusText}`
+  path: string,
+  method: string
+): MessageDescriptor {
+  const safeBodyMessage = redactToken(bodyMessage, cleanToken)
+  const detail = safeBodyMessage || `${status} ${statusText}`
 
   if (status === 401) {
-    const type = detectTokenType(cleanToken)
-    if (type === 'fine-grained') {
-      message =
-        "Token invalide, expiré, ou incomplet. Les tokens fine-grained expirent obligatoirement (1 an max) " +
-        "et sont longs à copier sur iPhone — vérifie sur github.com qu'il n'a pas expiré, et qu'il a bien été " +
-        'collé en entier.'
-    } else {
-      message = 'Token invalide ou expiré.'
+    return { key: 'errors.authenticationFailed', detail }
+  }
+
+  const retryAfterSeconds = getRetryAfterSeconds(headers)
+  const rateLimitRemaining = headers.get('x-ratelimit-remaining')
+  const isRateLimited = status === 429 || rateLimitRemaining === '0' || retryAfterSeconds !== undefined || /rate.?limit/i.test(safeBodyMessage || '')
+  if (isRateLimited && (status === 403 || status === 429)) {
+    return retryAfterSeconds && retryAfterSeconds > 0
+      ? { key: 'errors.rateLimitWait', values: { seconds: retryAfterSeconds }, detail: safeBodyMessage }
+      : { key: 'errors.rateLimit', detail: safeBodyMessage }
+  }
+
+  if (status === 409) {
+    return { key: 'errors.conflict', detail: safeBodyMessage }
+  }
+
+  if (status === 422) {
+    return { key: 'errors.validation', detail: safeBodyMessage }
+  }
+
+  if (status >= 500) {
+    return { key: 'errors.serverError', detail: safeBodyMessage }
+  }
+
+  if (status === 403 || status === 404) {
+    const ssoStatus = headers.get('x-github-sso')
+    if (ssoStatus && /^required\b/i.test(ssoStatus)) {
+      return { key: 'errors.ssoRequired', detail: redactToken(ssoStatus, cleanToken) }
+    }
+
+    const acceptedPermissions = redactToken(headers.get('x-accepted-github-permissions')?.trim(), cleanToken)
+    const acceptedScopes = redactToken(headers.get('x-accepted-oauth-scopes')?.trim(), cleanToken)
+
+    if (acceptedPermissions && acceptedScopes) {
+      return {
+        key: 'errors.permissionsAndScopesRequired',
+        values: { permissions: acceptedPermissions, scopes: acceptedScopes },
+        detail: safeBodyMessage,
+      }
+    }
+    if (acceptedPermissions) {
+      return { key: 'errors.permissionsRequired', values: { permissions: acceptedPermissions }, detail: safeBodyMessage }
+    }
+    if (acceptedScopes) {
+      return { key: 'errors.classicScopesRequired', values: { scopes: acceptedScopes }, detail: safeBodyMessage }
+    }
+
+    // GitHub's documented CORS headers may hide X-Accepted-GitHub-Permissions
+    // from browser code. Use a route-specific hint for recognized PAT formats,
+    // without using prefix detection to allow or reject authentication.
+    const fineGrainedHint = getFineGrainedPermissionHint(method, path)
+    const tokenType = detectTokenType(cleanToken)
+    if (fineGrainedHint && tokenType === 'fine-grained') {
+      if (status === 404 && !path.startsWith('/repos/')) {
+        return { key: 'errors.githubRequest', detail: safeBodyMessage }
+      }
+      return {
+        key: status === 404 ? 'errors.fineGrainedNotFoundHint' : 'errors.fineGrainedPermissionHint',
+        values: { permissions: fineGrainedHint },
+        detail: safeBodyMessage,
+      }
+    }
+    const classicScopeHint = 'repo (private repositories) or public_repo (public repositories)'
+    if (tokenType === 'classic' && path.startsWith('/repos/')) {
+      return {
+        key: status === 404 ? 'errors.classicNotFoundHint' : 'errors.classicPermissionHint',
+        values: { scopes: classicScopeHint },
+        detail: safeBodyMessage,
+      }
+    }
+
+    if (status === 403) return { key: 'errors.permissions', detail: safeBodyMessage }
+    return { key: 'errors.notFound', detail: safeBodyMessage }
+  }
+
+  return { key: 'errors.githubRequest', detail }
+}
+
+function getFineGrainedPermissionHint(method: string, path: string): string | undefined {
+  const verb = method.toUpperCase()
+  const route = path.split('?')[0]
+
+  if (route === '/user/repos' && verb === 'GET') return 'Metadata: read'
+  if (/^\/repos\/[^/]+\/[^/]+\/branches$/.test(route) && verb === 'GET') return 'Contents: read'
+  if (/^\/repos\/[^/]+\/[^/]+\/git\/ref\//.test(route) && verb === 'GET') return 'Contents: read'
+  if (/^\/repos\/[^/]+\/[^/]+\/git\/trees\/[^/]+$/.test(route) && verb === 'GET') return 'Contents: read'
+  if (/^\/repos\/[^/]+\/[^/]+\/git\/commits\/[^/]+$/.test(route) && verb === 'GET') return 'Contents: read'
+  if (/^\/repos\/[^/]+\/[^/]+\/git\/blobs$/.test(route) && verb === 'POST') return 'Contents: write'
+  if (/^\/repos\/[^/]+\/[^/]+\/git\/trees$/.test(route) && verb === 'POST') return 'Contents: write'
+  if (/^\/repos\/[^/]+\/[^/]+\/git\/commits$/.test(route) && verb === 'POST') return 'Contents: write'
+  if (/^\/repos\/[^/]+\/[^/]+\/git\/refs(?:\/.*)?$/.test(route) && (verb === 'POST' || verb === 'PATCH')) {
+    return 'Contents: write; Workflows: write may also be needed for workflow files'
+  }
+  if (/^\/repos\/[^/]+\/[^/]+\/pulls$/.test(route) && verb === 'POST') return 'Pull requests: write'
+
+  return undefined
+}
+
+function redactToken(value: string | undefined, cleanToken: string): string | undefined {
+  if (!value || !cleanToken) return value
+  return value.split(cleanToken).join('[redacted]')
+}
+
+function getRetryAfterSeconds(headers: Pick<Headers, 'get'>): number | undefined {
+  const retryAfter = headers.get('retry-after')
+  if (retryAfter !== null) {
+    const seconds = Number(retryAfter)
+    if (Number.isFinite(seconds) && seconds >= 0) return Math.ceil(seconds)
+
+    const retryAt = Date.parse(retryAfter)
+    if (Number.isFinite(retryAt)) return Math.max(0, Math.ceil((retryAt - Date.now()) / 1000))
+  }
+
+  if (headers.get('x-ratelimit-remaining') === '0') {
+    const resetAt = Number(headers.get('x-ratelimit-reset'))
+    if (Number.isFinite(resetAt) && resetAt > 0) {
+      return Math.max(0, Math.ceil((resetAt * 1000 - Date.now()) / 1000))
     }
   }
-  if (status === 403 && rateLimitRemaining === '0') {
-    message = "Limite de requêtes GitHub atteinte, réessaie dans quelques minutes."
-  } else if (status === 403) {
-    message = "Permissions insuffisantes pour ce dépôt — vérifie que le token a bien l'accès « Contents : Read and write »."
-  }
-  if (status === 404) message = "Introuvable — dépôt ou branche supprimé(e), ou droits insuffisants du token."
 
-  return message
+  return undefined
+}
+
+// L'API GitHub des references Git (PATCH /git/refs/{ref}) ne propose pas de mise
+// a jour conditionnelle (If-Match, ETag ou comparateur de SHA). Il n'existe donc
+// aucune garantie atomique : une petite fenetre de concurrence subsiste entre la
+// lecture du SHA courant et l'ecriture. Cette fonction applique le meilleur
+// protective disponible : relire la reference, la comparer au SHA attendu, puis
+// ne PATCHer que si elle correspond. En cas de divergence, la branche cible est
+// preservee et une erreur 409 est levee.
+async function verifyAndPatchRef(
+  token: string,
+  repo: RepoRef,
+  branch: BranchRef,
+  expectedSha: string,
+  newSha: string
+): Promise<void> {
+  const currentRef = await gh<{ object: { sha: string } }>(
+    token,
+    `/repos/${repo.fullName}/git/ref/heads/${encodeBranchPath(branch.name)}`
+  )
+  if (currentRef.object.sha !== expectedSha) {
+    throw new GitDockError(
+      'Conflit de branche',
+      undefined,
+      409,
+      { key: 'errors.conflict', detail: 'La branche cible a ete modifiee pendant le transfert. Reessayez l\'envoi.' }
+    )
+  }
+  await gh(token, `/repos/${repo.fullName}/git/refs/heads/${encodeBranchPath(branch.name)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ sha: newSha }),
+  })
 }
 
 async function gh<T>(token: string, path: string, init?: RequestInit): Promise<T> {
@@ -69,7 +209,7 @@ async function gh<T>(token: string, path: string, init?: RequestInit): Promise<T
   } catch {
     // fetch() rejette (pas de réponse HTTP du tout) en cas de coupure réseau, DNS, etc. —
     // le message natif du navigateur ("Failed to fetch") n'est pas compréhensible tel quel.
-    throw new GitDockError('Connexion impossible — vérifie ta connexion internet et réessaie.')
+    throw new GitDockError('Network request failed', undefined, undefined, { key: 'errors.network' })
   }
 
   if (!res.ok) {
@@ -80,14 +220,22 @@ async function gh<T>(token: string, path: string, init?: RequestInit): Promise<T
     } catch {
       // pas de corps JSON exploitable
     }
-    const message = deriveErrorMessage(
+    const userMessage = deriveErrorMessage(
       res.status,
       res.statusText,
       bodyMessage,
+      res.headers,
       cleanToken,
-      res.headers.get('x-ratelimit-remaining')
+      path,
+      init?.method ?? 'GET'
     )
-    throw new GitDockError(message, undefined, res.status)
+    console.error('Treeporter GitHub request failed', {
+      method: init?.method ?? 'GET',
+      path,
+      status: res.status,
+      message: redactToken(bodyMessage, cleanToken),
+    })
+    throw new GitDockError(redactToken(bodyMessage, cleanToken) || `${res.status} ${res.statusText}`, undefined, res.status, userMessage)
   }
 
   return res.json() as Promise<T>
@@ -121,7 +269,7 @@ function uploadBlobWithProgress<T>(
 
     xhr.onerror = () => {
       // Même cas que le catch de fetch() dans gh() : coupure réseau, DNS, etc.
-      reject(new GitDockError('Connexion impossible — vérifie ta connexion internet et réessaie.'))
+      reject(new GitDockError('Network request failed', undefined, undefined, { key: 'errors.network' }))
     }
 
     xhr.onload = () => {
@@ -129,7 +277,7 @@ function uploadBlobWithProgress<T>(
         try {
           resolve(JSON.parse(xhr.responseText) as T)
         } catch {
-          reject(new GitDockError('Réponse GitHub invalide.'))
+          reject(new GitDockError('Invalid JSON response', undefined, undefined, { key: 'errors.invalidGithubResponse' }))
         }
       } else {
         let bodyMessage: string | undefined
@@ -138,14 +286,22 @@ function uploadBlobWithProgress<T>(
         } catch {
           // pas de corps JSON exploitable
         }
-        const message = deriveErrorMessage(
+        const userMessage = deriveErrorMessage(
           xhr.status,
           xhr.statusText,
           bodyMessage,
+          { get: (name) => xhr.getResponseHeader(name) },
           cleanToken,
-          xhr.getResponseHeader('x-ratelimit-remaining')
+          path,
+          'POST'
         )
-        reject(new GitDockError(message, undefined, xhr.status))
+        console.error('Treeporter GitHub blob upload failed', {
+          method: 'POST',
+          path,
+          status: xhr.status,
+          message: redactToken(bodyMessage, cleanToken),
+        })
+        reject(new GitDockError(redactToken(bodyMessage, cleanToken) || `${xhr.status} ${xhr.statusText}`, undefined, xhr.status, userMessage))
       }
     }
 
@@ -154,10 +310,10 @@ function uploadBlobWithProgress<T>(
 }
 
 const START_STEPS: UploadStep[] = [
-  { id: 'files', label: 'Envoi des fichiers', status: 'pending' },
-  { id: 'tree', label: "Construction de l'arborescence", status: 'pending' },
-  { id: 'commit', label: 'Création du commit', status: 'pending' },
-  { id: 'ref', label: 'Mise à jour de la branche', status: 'pending' },
+  { id: 'files', label: 'sending.uploadStep', status: 'pending' },
+  { id: 'tree', label: 'sending.treeStep', status: 'pending' },
+  { id: 'commit', label: 'sending.commitStep', status: 'pending' },
+  { id: 'ref', label: 'sending.branchStep', status: 'pending' },
 ]
 
 export class GitHubClient implements GitProvider {
@@ -196,35 +352,39 @@ export class GitHubClient implements GitProvider {
       name: r.name,
       fullName: r.full_name,
       defaultBranch: r.default_branch,
-      canPush: Boolean(r.permissions?.push),
+      // This is the authenticated account's repository role, not proof that a
+      // fine-grained PAT itself has Contents: write. Leave unknown when omitted.
+      canPush: typeof r.permissions?.push === 'boolean' ? r.permissions.push : undefined,
     }))
   }
 
   async listBranches(repo: RepoRef): Promise<string[]> {
-    const branches = await gh<any[]>(this.token, `/repos/${repo.fullName}/branches?per_page=100`)
-    return branches.map((b) => b.name)
+    const all: any[] = []
+    let page = 1
+    while (true) {
+      const batch = await gh<any[]>(this.token, `/repos/${repo.fullName}/branches?per_page=100&page=${page}`)
+      all.push(...batch)
+      if (batch.length < 100) break
+      page += 1
+    }
+    return all.map((b) => b.name)
   }
 
   async listExistingPaths(repo: RepoRef, branch: BranchRef): Promise<Set<string>> {
-    // Branche pas encore créée : rien ne peut être en conflit.
+    // A newly selected branch has no existing paths. For an existing branch, a
+    // 404 can also mean GitHub is hiding a private resource the token cannot read.
     if (branch.isNew) return new Set()
-    try {
-      const ref = await gh<{ object: { sha: string } }>(
-        this.token,
-        `/repos/${repo.fullName}/git/ref/heads/${encodeBranchPath(branch.name)}`
-      )
-      const tree = await gh<{ tree: Array<{ path: string; type: string }> }>(
-        this.token,
-        `/repos/${repo.fullName}/git/trees/${ref.object.sha}?recursive=1`
-      )
-      return new Set(tree.tree.filter((e) => e.type === 'blob').map((e) => e.path))
-    } catch (err) {
-      // Dépôt/branche vide (pas encore de commit) : aucun conflit possible, on n'empêche pas l'envoi.
-      if (err instanceof GitDockError && err.status === 404) return new Set()
-      throw err
-    }
-  }
 
+    const ref = await gh<{ object: { sha: string } }>(
+      this.token,
+      `/repos/${repo.fullName}/git/ref/heads/${encodeBranchPath(branch.name)}`
+    )
+    const tree = await gh<{ tree: Array<{ path: string; type: string }> }>(
+      this.token,
+      `/repos/${repo.fullName}/git/trees/${ref.object.sha}?recursive=1`
+    )
+    return new Set(tree.tree.filter((e) => e.type === 'blob').map((e) => e.path))
+  }
   async createPullRequest(repo: RepoRef, branch: BranchRef, title: string): Promise<PullRequestResult> {
     const pr = await gh<{ html_url: string; number: number }>(this.token, `/repos/${repo.fullName}/pulls`, {
       method: 'POST',
@@ -237,12 +397,24 @@ export class GitHubClient implements GitProvider {
     return { url: pr.html_url, number: pr.number }
   }
 
-  async commit(plan: CommitPlan, callbacks: CommitCallbacks, onlyItemIds?: string[]): Promise<SendResult> {
+  /**
+   * Crée un seul commit avec un batch de fichiers.
+   * Méthode interne utilisée par commit() pour le fractionnement.
+   * Si parentCommitSha est null, récupère le commit de base depuis la branche.
+   */
+  private async _commitSingleBatch(
+    plan: CommitPlan,
+    batchFiles: DockedFile[],
+    parentCommitSha: string | null,
+    callbacks: CommitCallbacks,
+    batchIndex: number,
+    totalBatches: number
+  ): Promise<{ commitSha: string; treeSha: string; baseSha: string; filesSent: number; filesFailed: number }> {
     const steps = START_STEPS.map((s) => ({ ...s }))
     const emitSteps = () => callbacks.onSteps(steps.map((s) => ({ ...s })))
 
-    const eligible = plan.files.filter((f) => !f.excluded)
-    const idsToAttempt = new Set(onlyItemIds ?? eligible.map((f) => f.id))
+    const eligible = batchFiles.filter((f) => !f.excluded)
+    const idsToAttempt = new Set(eligible.map((f) => f.id))
 
     const items: UploadItem[] = eligible.map((f) => ({
       id: f.id,
@@ -257,38 +429,44 @@ export class GitHubClient implements GitProvider {
     steps[0].status = 'uploading'
     emitSteps()
 
+    // Charger tous les fichiers de ce batch
+    // Utiliser un bloc pour chaque fichier afin de libérer la mémoire (ArrayBuffer + Base64 string) après upload
     for (const docked of eligible) {
       if (!idsToAttempt.has(docked.id) || this.blobCache.has(this.cacheKey(plan.repo, docked.id))) continue
       const item = items.find((i) => i.id === docked.id)!
       item.status = 'uploading'
       item.bytesSent = 0
       emitItems()
+
+      // Traiter chaque fichier dans un bloc pour limiter la portée des variables mémoire
       try {
-        const content = await fileToBase64(docked.file)
-        let lastEmit = 0
-        const blob = await uploadBlobWithProgress<{ sha: string }>(
-          this.token,
-          `/repos/${plan.repo.fullName}/git/blobs`,
-          { content, encoding: 'base64' },
-          (loadedBytes, totalBytes) => {
-            // Throttle : un événement de progression peut se déclencher très fréquemment,
-            // inutile de re-rendre l'interface plus de 10 fois par seconde.
-            const now = Date.now()
-            if (now - lastEmit < 100 && loadedBytes < totalBytes) return
-            lastEmit = now
-            // loadedBytes/totalBytes portent sur le corps encodé en base64 (~33 % plus gros
-            // que le fichier d'origine) — on ramène la progression à la taille réelle du
-            // fichier pour qu'elle corresponde à ce qui est affiché à l'utilisateur.
-            item.bytesSent = Math.min(docked.size, Math.round((loadedBytes / totalBytes) * docked.size))
-            emitItems()
-          }
-        )
-        this.blobCache.set(this.cacheKey(plan.repo, docked.id), blob.sha)
-        item.status = 'done'
-        item.bytesSent = docked.size
+        // Ne pas utiliser const pour permettre la libération explicite
+        let content: string | null = await fileToBase64(docked.file)
+        try {
+          let lastEmit = 0
+          const blob = await uploadBlobWithProgress<{ sha: string }>(
+            this.token,
+            `/repos/${plan.repo.fullName}/git/blobs`,
+            { content, encoding: 'base64' },
+            (loadedBytes, totalBytes) => {
+              const now = Date.now()
+              if (now - lastEmit < 100 && loadedBytes < totalBytes) return
+              lastEmit = now
+              item.bytesSent = Math.min(docked.size, Math.round((loadedBytes / totalBytes) * docked.size))
+              emitItems()
+            }
+          )
+          this.blobCache.set(this.cacheKey(plan.repo, docked.id), blob.sha)
+          item.status = 'done'
+          item.bytesSent = docked.size
+        } finally {
+          // Libérer explicitement la référence à content pour permettre le garbage collection
+          // La string Base64 peut occuper ~133% de la taille du fichier
+          content = null
+        }
       } catch (err) {
         item.status = 'error'
-        item.error = err instanceof Error ? err.message : "Échec de l'envoi"
+        item.error = messageFromError(err, 'errors.fileUpload')
       }
       emitItems()
     }
@@ -302,20 +480,35 @@ export class GitHubClient implements GitProvider {
     steps[0].status = 'done'
     emitSteps()
 
-    // --- construction de l'arbre, du commit, mise à jour de la branche ---
+    // Construction de l'arbre - récupérer baseTreeSha depuis parentCommitSha
     steps[1].status = 'uploading'
     emitSteps()
 
-    const baseBranchName = plan.branch.isNew ? plan.repo.defaultBranch : plan.branch.name
-    const baseRef = await gh<{ object: { sha: string } }>(
-      this.token,
-      `/repos/${plan.repo.fullName}/git/ref/heads/${encodeBranchPath(baseBranchName)}`
-    )
-    const baseSha = baseRef.object.sha
-    const baseCommit = await gh<{ tree: { sha: string } }>(
-      this.token,
-      `/repos/${plan.repo.fullName}/git/commits/${baseSha}`
-    )
+    let parentTreeSha: string
+
+    if (parentCommitSha) {
+      // On a déjà le SHA du parent commit, récupérer son arbre
+      const parentCommit = await gh<{ tree: { sha: string } }>(
+        this.token,
+        `/repos/${plan.repo.fullName}/git/commits/${parentCommitSha}`
+      )
+      parentTreeSha = parentCommit.tree.sha
+    } else {
+      // Premier batch : récupérer le SHA du commit de base depuis la branche
+      const baseBranchName = plan.branch.isNew ? plan.repo.defaultBranch : plan.branch.name
+      const baseRef = await gh<{ object: { sha: string } }>(
+        this.token,
+        `/repos/${plan.repo.fullName}/git/ref/heads/${encodeBranchPath(baseBranchName)}`
+      )
+      const baseCommitSha = baseRef.object.sha
+      const baseCommit = await gh<{ tree: { sha: string } }>(
+        this.token,
+        `/repos/${plan.repo.fullName}/git/commits/${baseCommitSha}`
+      )
+      parentTreeSha = baseCommit.tree.sha
+      // Mettre à jour parentCommitSha pour l'utiliser dans le commit
+      parentCommitSha = baseCommitSha
+    }
 
     const treeEntries = items.map((i) => ({
       path: i.path,
@@ -326,45 +519,205 @@ export class GitHubClient implements GitProvider {
 
     const tree = await gh<{ sha: string }>(this.token, `/repos/${plan.repo.fullName}/git/trees`, {
       method: 'POST',
-      body: JSON.stringify({ base_tree: baseCommit.tree.sha, tree: treeEntries }),
+      body: JSON.stringify({ base_tree: parentTreeSha, tree: treeEntries }),
     })
     steps[1].status = 'done'
     emitSteps()
 
+    // Création du commit
     steps[2].status = 'uploading'
     emitSteps()
     const commit = await gh<{ sha: string }>(this.token, `/repos/${plan.repo.fullName}/git/commits`, {
       method: 'POST',
       body: JSON.stringify({
-        message: plan.commitMessage,
+        message: batchIndex > 0
+          ? `${plan.commitMessage} (batch ${batchIndex + 1}/${totalBatches})`
+          : plan.commitMessage,
         tree: tree.sha,
-        parents: [baseSha],
+        parents: parentCommitSha ? [parentCommitSha] : [],
       }),
     })
     steps[2].status = 'done'
     emitSteps()
 
-    steps[3].status = 'uploading'
-    emitSteps()
-    if (plan.branch.isNew) {
+    return {
+      commitSha: commit.sha,
+      treeSha: tree.sha,
+      baseSha: parentCommitSha,
+      filesSent: items.length,
+      filesFailed: 0,
+    }
+  }
+
+  async commit(plan: CommitPlan, callbacks: CommitCallbacks, onlyItemIds?: string[]): Promise<SendResult> {
+    const eligible = plan.files.filter((f) => !f.excluded)
+
+    // Si onlyItemIds est spécifié, on ne traite que ces fichiers
+    const filesToProcess = onlyItemIds
+      ? eligible.filter(f => onlyItemIds.includes(f.id))
+      : eligible
+
+    // Vérifier si on a besoin de fractionner
+    const needsBatching = filesToProcess.length > MAX_RECOMMENDED_FILE_COUNT_PER_COMMIT ||
+      filesToProcess.reduce((sum, f) => sum + f.size, 0) > MAX_RECOMMENDED_COMMIT_SIZE_BYTES
+
+    // Déterminer le parent commit SHA pour le premier batch
+    // On ne récupère pas baseSha ici pour éviter une requête fetch avant le upload
+    // baseSha sera récupéré dans _commitSingleBatch si nécessaire
+
+    if (!needsBatching) {
+      // Cas simple : un seul commit suffit
+      const result = await this._commitSingleBatch(
+        plan,
+        filesToProcess,
+        null, // parentCommitSha sera déterminé depuis la branche
+        callbacks,
+        0,
+        1
+      )
+
+      // Gérer la référence de branche
+      const steps = START_STEPS.map((s) => ({ ...s }))
+      const emitSteps = () => callbacks.onSteps(steps.map((s) => ({ ...s })))
+      steps[3].status = 'uploading'
+      emitSteps()
+
+      const baseBranchName = plan.branch.isNew ? plan.repo.defaultBranch : plan.branch.name
+
+      if (plan.branch.isNew) {
+        await gh(this.token, `/repos/${plan.repo.fullName}/git/refs`, {
+          method: 'POST',
+          body: JSON.stringify({ ref: `refs/heads/${plan.branch.name}`, sha: result.commitSha }),
+        })
+      } else {
+        await verifyAndPatchRef(this.token, plan.repo, plan.branch, result.baseSha, result.commitSha)
+      }
+      steps[3].status = 'done'
+      emitSteps()
+
+      return {
+        commitSha: result.commitSha,
+        commitUrl: `https://github.com/${plan.repo.fullName}/commit/${result.commitSha}`,
+        filesSent: result.filesSent,
+        filesFailed: result.filesFailed,
+        batchCount: 1,
+        currentBatch: 1,
+        totalBatches: 1,
+      }
+    }
+
+    // Cas avec fractionnement en plusieurs commits
+    const batches = splitFilesIntoBatches(filesToProcess)
+    const totalBatches = batches.length
+
+    // Pour une branche existante avec batching, on doit utiliser une approche spéciale
+    // pour éviter d'écraser l'historique : on crée les commits sur une branche temporaire
+    // puis on squash tout en un seul commit sur la branche cible.
+    // Pour une nouvelle branche, on peut créer directement les commits chaînés.
+    const baseBranchName = plan.branch.isNew ? plan.repo.defaultBranch : plan.branch.name
+    const baseRef = await gh<{ object: { sha: string } }>(
+      this.token,
+      `/repos/${plan.repo.fullName}/git/ref/heads/${encodeBranchPath(baseBranchName)}`
+    )
+    const baseSha = baseRef.object.sha
+
+    // Pour une branche existante, créer une branche temporaire pour les commits batch
+    const tempBranchName = plan.branch.isNew
+      ? null
+      : `treeporter-temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+    if (tempBranchName) {
+      // Créer la branche temporaire à partir du commit de base
       await gh(this.token, `/repos/${plan.repo.fullName}/git/refs`, {
         method: 'POST',
-        body: JSON.stringify({ ref: `refs/heads/${plan.branch.name}`, sha: commit.sha }),
+        body: JSON.stringify({ ref: `refs/heads/${tempBranchName}`, sha: baseSha }),
+      })
+    }
+
+    // Pour le premier batch, parentCommitSha est le SHA du commit de base
+    // (ou null pour nouvelle branche, sera déterminé dans _commitSingleBatch)
+    let currentParentSha: string | null = tempBranchName ? baseSha : null
+
+    let totalFilesSent = 0
+    let totalFilesFailed = 0
+    let latestCommitSha = ''
+    let latestTreeSha = ''
+
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      // Notifier la progression du batch
+      if (callbacks.onBatchProgress) {
+        callbacks.onBatchProgress(batchIndex + 1, totalBatches)
+      }
+
+      const batchResult = await this._commitSingleBatch(
+        plan,
+        batches[batchIndex],
+        currentParentSha,
+        callbacks,
+        batchIndex,
+        totalBatches
+      )
+
+      latestCommitSha = batchResult.commitSha
+      latestTreeSha = batchResult.treeSha
+      currentParentSha = batchResult.commitSha
+      totalFilesSent += batchResult.filesSent
+      totalFilesFailed += batchResult.filesFailed
+    }
+
+    // Mettre à jour la référence de branche
+    const steps = START_STEPS.map((s) => ({ ...s }))
+    const emitSteps = () => callbacks.onSteps(steps.map((s) => ({ ...s })))
+    steps[3].status = 'uploading'
+    emitSteps()
+
+    if (plan.branch.isNew) {
+      // Pour une nouvelle branche : pointer directement vers le dernier commit
+      await gh(this.token, `/repos/${plan.repo.fullName}/git/refs`, {
+        method: 'POST',
+        body: JSON.stringify({ ref: `refs/heads/${plan.branch.name}`, sha: latestCommitSha }),
       })
     } else {
-      await gh(this.token, `/repos/${plan.repo.fullName}/git/refs/heads/${encodeBranchPath(plan.branch.name)}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ sha: commit.sha }),
+      // Pour une branche existante : squash tous les commits en un seul
+      // Créer un commit final avec l'arbre complet et comme parent le commit original
+      const squashCommit = await gh<{ sha: string }>(this.token, `/repos/${plan.repo.fullName}/git/commits`, {
+        method: 'POST',
+        body: JSON.stringify({
+          message: plan.commitMessage,
+          tree: latestTreeSha,
+          parents: [baseSha],
+        }),
       })
+
+      // Vérifier que la branche cible n'a pas évolué avant d'écraser sa référence.
+      // L'API GitHub ne propose pas de mise a jour conditionnelle (If-Match) sur
+      // les references Git : il existe une petite fenetre de concurrence entre
+      // cette verification et le PATCH. En cas de divergence, la branche est
+      // preservee et une erreur 409 est levee.
+      await verifyAndPatchRef(this.token, plan.repo, plan.branch, baseSha, squashCommit.sha)
+
+      latestCommitSha = squashCommit.sha
+
+      // Nettoyer : supprimer la branche temporaire
+      try {
+        await gh(this.token, `/repos/${plan.repo.fullName}/git/refs/heads/${encodeBranchPath(tempBranchName!)}`, {
+          method: 'DELETE',
+        })
+      } catch {
+        // Ignorer l'échec de suppression (la branche temp peut déjà être nettoyée)
+      }
     }
     steps[3].status = 'done'
     emitSteps()
 
     return {
-      commitSha: commit.sha,
-      commitUrl: `https://github.com/${plan.repo.fullName}/commit/${commit.sha}`,
-      filesSent: items.length,
-      filesFailed: 0,
+      commitSha: latestCommitSha,
+      commitUrl: `https://github.com/${plan.repo.fullName}/commit/${latestCommitSha}`,
+      filesSent: totalFilesSent,
+      filesFailed: totalFilesFailed,
+      batchCount: totalBatches,
+      currentBatch: totalBatches,
+      totalBatches: totalBatches,
     }
   }
 }

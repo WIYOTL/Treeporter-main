@@ -13,7 +13,7 @@ import {
   getHistory,
 } from './services/history'
 import type { HistoryEntry } from './services/history'
-import { getTargetPathError } from './services/fileTree'
+import { getTargetPathError, checkTransferLimits, getTransferLimitError } from './services/fileTree'
 
 import { useAuth } from './hooks/useAuth'
 import { useDock } from './hooks/useDock'
@@ -32,6 +32,12 @@ import { ScreenResult } from './components/ScreenResult'
 import { AppFooter } from './components/AppFooter'
 import { CreditsModal } from './components/CreditsModal'
 import { HelpModal } from './components/HelpModal'
+import { useI18n } from './i18n/I18nProvider'
+import { messageFromError } from './i18n/message'
+import type { MessageDescriptor } from './i18n/message'
+import type { MessageKey } from './i18n/messages'
+
+type Translate = (key: MessageKey, values?: Record<string, string | number>) => string
 
 const FLOW_SCREENS: ScreenId[] = [
   'dock',
@@ -42,12 +48,13 @@ const FLOW_SCREENS: ScreenId[] = [
 
 function derivePullRequestTitle(
   commitMessage: string,
-  branchName: string
+  branchName: string,
+  t: Translate
 ): string {
   const firstLine = commitMessage.split('\n')[0].trim()
 
   if (!firstLine) {
-    return `Fusionner ${branchName}`
+    return t('result.defaultPullRequestTitle', { branch: branchName })
   }
 
   return firstLine.length > 100
@@ -56,13 +63,14 @@ function derivePullRequestTitle(
 }
 
 export default function App() {
+  const { t } = useI18n()
   const [screen, setScreen] = useState<ScreenId>('connect')
   const [historyEntries, setHistoryEntries] = useState<
     HistoryEntry[]
   >(() => getHistory())
 
   const [prLoading, setPrLoading] = useState(false)
-  const [prError, setPrError] = useState<string | null>(null)
+  const [prError, setPrError] = useState<MessageDescriptor | null>(null)
   const [prUrl, setPrUrl] = useState<string | null>(null)
   const [branchWasCreated, setBranchWasCreated] =
     useState(false)
@@ -127,6 +135,14 @@ export default function App() {
     )
 
     if (targetPathError) {
+      return
+    }
+
+    // Vérifier les limites de transfert avant de continuer
+    const limitError = getTransferLimitError(dock.files)
+    if (limitError) {
+      // Afficher une alerte avec le message d'erreur
+      window.alert(t(limitError.key, limitError.values))
       return
     }
 
@@ -243,17 +259,14 @@ export default function App() {
           destination.destination.branch,
           derivePullRequestTitle(
             destination.destination.commitMessage,
-            destination.destination.branch.name
+            destination.destination.branch.name,
+            t
           )
         )
 
       setPrUrl(pullRequest.url)
     } catch (error) {
-      setPrError(
-        error instanceof Error
-          ? error.message
-          : 'Impossible de créer la Pull Request.'
-      )
+      setPrError(messageFromError(error, 'errors.pullRequest'))
     } finally {
       setPrLoading(false)
     }
@@ -261,7 +274,7 @@ export default function App() {
 
   async function handleDisconnect() {
     const confirmed = window.confirm(
-      'Déconnecter ce compte GitHub ? Le token enregistré sur cet iPhone sera effacé.'
+      t('app.disconnectConfirm')
     )
 
     if (!confirmed) {
@@ -315,7 +328,7 @@ export default function App() {
             justifyContent: 'center',
           }}
         >
-          <p className="p-dim">Reprise de la session…</p>
+          <p className="p-dim">{t('app.resumeSession')}</p>
         </div>
 
         <AppFooter
@@ -349,7 +362,7 @@ export default function App() {
               className="app-subtitle"
               style={{ marginTop: 0 }}
             >
-              N'importe quel appareil → GitHub
+              {t('app.subtitle')}
             </div>
           </div>
 
@@ -358,7 +371,7 @@ export default function App() {
               className="demo-badge"
               style={{ marginLeft: 'auto' }}
             >
-              Démo
+              {t('app.demo')}
             </span>
           )}
 
@@ -374,9 +387,9 @@ export default function App() {
               {auth.tokenType && (
                 <span
                   className="mono-chip"
-                  title={TOKEN_TYPE_LABEL[auth.tokenType]}
+                  title={t(TOKEN_TYPE_LABEL[auth.tokenType])}
                 >
-                  {TOKEN_TYPE_BADGE[auth.tokenType]}
+                  {t(TOKEN_TYPE_BADGE[auth.tokenType])}
                 </span>
               )}
 
@@ -385,7 +398,7 @@ export default function App() {
                 className="btn btn-ghost btn-sm"
                 onClick={handleDisconnect}
               >
-                Déconnecter
+                {t('app.disconnect')}
               </button>
             </div>
           )}
@@ -405,6 +418,7 @@ export default function App() {
             loading={auth.connectLoading}
             error={auth.connectError}
             sessionError={auth.sessionError}
+            sessionRetryAvailable={auth.sessionRetryAvailable}
           />
         )}
 
@@ -431,19 +445,23 @@ export default function App() {
             repos={destination.repos}
             branches={destination.branches}
             loadingRepos={destination.loadingRepos}
-            repositoryLoadError={null}
+            reposLoaded={destination.reposLoaded}
+            repositoryLoadError={destination.repositoryLoadError}
             loadingBranches={destination.loadingBranches}
             emptyRepo={
               Boolean(
                 destination.destination.repo &&
+                  destination.branchesLoaded &&
                   destination.branches.length === 0 &&
-                  !destination.loadingBranches
+                  !destination.loadingBranches &&
+                  !destination.branchLoadError
               )
             }
-            branchError={null}
+            branchError={destination.branchLoadError}
             destination={destination.destination}
             onSelectRepo={destination.selectRepo}
             loadRepos={destination.loadReposIfNeeded}
+            onRetryBranches={destination.retryBranches}
             onChange={destination.updateDestination}
             onBack={() => setScreen('dock')}
             onContinue={goToPreview}
@@ -481,6 +499,8 @@ export default function App() {
             onRetry={handleSendRetry}
             onBackToPreview={() => setScreen('preview')}
             updatePending={pwaUpdate.updateReady}
+            currentBatch={transfer.currentBatch}
+            totalBatches={transfer.totalBatches}
           />
         )}
 

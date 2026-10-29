@@ -29,10 +29,10 @@ const DEMO_EXISTING_PATHS: Record<string, string[]> = {
 }
 
 const START_STEPS: UploadStep[] = [
-  { id: 'files', label: 'Envoi des fichiers (démo)', status: 'pending' },
-  { id: 'tree', label: "Construction de l'arborescence", status: 'pending' },
-  { id: 'commit', label: 'Création du commit', status: 'pending' },
-  { id: 'ref', label: 'Mise à jour de la branche', status: 'pending' },
+  { id: 'files', label: 'sending.uploadStep', status: 'pending' },
+  { id: 'tree', label: 'sending.treeStep', status: 'pending' },
+  { id: 'commit', label: 'sending.commitStep', status: 'pending' },
+  { id: 'ref', label: 'sending.branchStep', status: 'pending' },
 ]
 
 export class DemoClient implements GitProvider {
@@ -109,7 +109,7 @@ export class DemoClient implements GitProvider {
       if (shouldFailOnce) {
         this.failedOnce.add(docked.id)
         item.status = 'error'
-        item.error = 'Erreur réseau simulée (démo)'
+        item.error = { key: 'errors.demoNetwork' }
       } else {
         this.done.add(docked.id)
         item.status = 'done'
@@ -140,6 +140,9 @@ export class DemoClient implements GitProvider {
       commitUrl: `https://github.com/${plan.repo.fullName}/commit/${fakeSha}`,
       filesSent: items.length,
       filesFailed: 0,
+      batchCount: 1,
+      currentBatch: 1,
+      totalBatches: 1,
     }
   }
 }

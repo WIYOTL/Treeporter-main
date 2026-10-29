@@ -3,6 +3,8 @@ import type { DockedFile } from '../types'
 import { TreeView } from './TreeView'
 import { ActionSheet } from './ActionSheet'
 import { formatBytes, totalSize } from '../services/fileTree'
+import type { MessageDescriptor } from '../i18n/message'
+import { useI18n } from '../i18n/I18nProvider'
 
 interface Props {
   files: DockedFile[]
@@ -14,7 +16,7 @@ interface Props {
   overwriteNotice: string[] | null
   onDismissOverwriteNotice: () => void
   zipLoading: boolean
-  zipError: string | null
+  zipError: MessageDescriptor | null
   onDismissZipError: () => void
 }
 
@@ -31,6 +33,7 @@ export function ScreenDock({
   zipError,
   onDismissZipError,
 }: Props) {
+  const { locale, t, plural, formatMessage, formatNumber } = useI18n()
   const [sheetOpen, setSheetOpen] = useState(false)
   const filesInputRef = useRef<HTMLInputElement>(null)
   const dirInputRef = useRef<HTMLInputElement>(null)
@@ -40,41 +43,41 @@ export function ScreenDock({
 
   return (
     <div>
-      <div className="h1">Zone de transfert</div>
-      <p className="p-dim">Ajoute des fichiers, un dossier complet, ou une archive .zip depuis l'app Fichiers.</p>
+      <div className="h1">{t('dock.title')}</div>
+      <p className="p-dim">{t('dock.instructions')}</p>
 
       {overwriteNotice && overwriteNotice.length > 0 && (
         <div className="banner banner-info" style={{ marginTop: 12 }}>
-          {overwriteNotice.length} fichier{overwriteNotice.length > 1 ? 's' : ''} déjà présent
-          {overwriteNotice.length > 1 ? 's ont' : ' a'} été remplacé{overwriteNotice.length > 1 ? 's' : ''} par ce
-          nouvel ajout (même chemin) :{' '}
+          {plural('dock.overwrite.one', 'dock.overwrite.other', overwriteNotice.length, {
+            paths: '', count: formatNumber(overwriteNotice.length),
+          })}
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
             {overwriteNotice.slice(0, 3).join(', ')}
-            {overwriteNotice.length > 3 ? `, +${overwriteNotice.length - 3}` : ''}
+            {overwriteNotice.length > 3 ? `, +${formatNumber(overwriteNotice.length - 3)}` : ''}
           </span>
           <button className="btn btn-ghost btn-sm" style={{ marginTop: 6 }} onClick={onDismissOverwriteNotice}>
-            Compris
+            {t('common.understood')}
           </button>
         </div>
       )}
 
       {zipLoading && (
         <div className="banner banner-info" style={{ marginTop: 12 }}>
-          Extraction de l'archive…
+          {t('dock.extractingZip')}
         </div>
       )}
 
       {zipError && (
         <div className="banner banner-error" style={{ marginTop: 12 }}>
-          {zipError}
+          {formatMessage(zipError)}
           <button className="btn btn-ghost btn-sm" style={{ marginTop: 6 }} onClick={onDismissZipError}>
-            Compris
+            {t('common.understood')}
           </button>
         </div>
       )}
 
       <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setSheetOpen(true)}>
-        + Ajouter
+        {t('dock.add')}
       </button>
 
       {/* input fichiers multiples */}
@@ -115,20 +118,20 @@ export function ScreenDock({
 
       {sheetOpen && (
         <ActionSheet
-          title="Que veux-tu ajouter ?"
+          title={t('dock.addQuestion')}
           onClose={() => setSheetOpen(false)}
           options={[
-            { label: 'Fichiers', sub: 'Choisir un ou plusieurs fichiers', onSelect: () => filesInputRef.current?.click() },
-            { label: 'Dossier complet', sub: "Conserve toute l'arborescence", onSelect: () => dirInputRef.current?.click() },
-            { label: 'Archive .zip', sub: "Extrait l'arborescence de l'archive", onSelect: () => zipInputRef.current?.click() },
+            { label: t('dock.files'), sub: t('dock.chooseFiles'), onSelect: () => filesInputRef.current?.click() },
+            { label: t('dock.folder'), sub: t('dock.keepTree'), onSelect: () => dirInputRef.current?.click() },
+            { label: t('dock.zip'), sub: t('dock.extractTree'), onSelect: () => zipInputRef.current?.click() },
           ]}
         />
       )}
 
       {files.length === 0 ? (
         <div className="empty-state">
-          <div className="h1">Rien pour l'instant</div>
-          <p className="p-dim">Appuie sur « + Ajouter » pour choisir des fichiers ou un dossier depuis Fichiers.</p>
+          <div className="h1">{t('dock.emptyTitle')}</div>
+          <p className="p-dim">{t('dock.emptyDescription')}</p>
         </div>
       ) : (
         <>
@@ -141,10 +144,10 @@ export function ScreenDock({
             }}
           >
             <div className="section-label" style={{ margin: 0 }}>
-              {includedCount} élément{includedCount > 1 ? 's' : ''} · {formatBytes(totalSize(files))}
+              {plural('dock.item.one', 'dock.item.other', includedCount)} · {formatBytes(totalSize(files), locale)}
             </div>
             <button className="btn btn-ghost btn-sm" onClick={onClear}>
-              Tout vider
+              {t('dock.clear')}
             </button>
           </div>
           <TreeView files={files} onRemove={onRemove} />
@@ -153,7 +156,7 @@ export function ScreenDock({
 
       <div className="sticky-footer">
         <button className="btn btn-primary" disabled={includedCount === 0} onClick={onContinue}>
-          Continuer · {includedCount} fichier{includedCount > 1 ? 's' : ''}
+          {plural('dock.continue.one', 'dock.continue.other', includedCount)}
         </button>
       </div>
     </div>

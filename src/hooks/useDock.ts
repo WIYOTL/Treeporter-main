@@ -2,14 +2,18 @@ import { useState } from 'react'
 import type { DockedFile } from '../types'
 import { filesToDocked, mergeDocked } from '../services/fileTree'
 import { zipToDocked } from '../services/zip'
+import { messageFromError } from '../i18n/message'
+import type { MessageDescriptor } from '../i18n/message'
+import { useI18n } from '../i18n/I18nProvider'
 
 // Fichiers/dossiers ajoutés dans la "zone de transfert" (écran Dock). Extrait de App.tsx
 // (V2.0.0) sans changer le comportement.
 export function useDock() {
+  const { t, formatNumber } = useI18n()
   const [files, setFiles] = useState<DockedFile[]>([])
   const [overwriteNotice, setOverwriteNotice] = useState<string[] | null>(null)
   const [zipLoading, setZipLoading] = useState(false)
-  const [zipError, setZipError] = useState<string | null>(null)
+  const [zipError, setZipError] = useState<MessageDescriptor | null>(null)
 
   function mergeAndNotify(added: DockedFile[]) {
     setFiles((prev) => {
@@ -30,7 +34,7 @@ export function useDock() {
       const extracted = await zipToDocked(zipFile)
       mergeAndNotify(extracted)
     } catch (err) {
-      setZipError(err instanceof Error ? err.message : "Impossible d'extraire cette archive.")
+      setZipError(messageFromError(err, 'errors.zipRead'))
     } finally {
       setZipLoading(false)
     }
@@ -45,7 +49,7 @@ export function useDock() {
   }
 
   function handleClearWithConfirm() {
-    if (files.length === 0 || window.confirm(`Retirer les ${files.length} fichier(s) ajouté(s) ?`)) {
+    if (files.length === 0 || window.confirm(t('dock.clearConfirm', { count: formatNumber(files.length) }))) {
       setFiles([])
       setOverwriteNotice(null)
     }

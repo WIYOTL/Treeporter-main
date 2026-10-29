@@ -1,18 +1,23 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import type { DockedFile, Destination, UploadStep, UploadItem, SendResult, ConflictResolution } from '../types'
 import type { GitProvider } from '../services/gitProvider'
 import { GitDockError } from '../services/gitProvider'
 import { joinTargetPath, resolveRenamedPath } from '../services/fileTree'
+import { messageFromError } from '../i18n/message'
+import type { MessageDescriptor } from '../i18n/message'
 
 // Envoi vers GitHub : progression, erreurs, retry ciblé, résultat final. Extrait de App.tsx
 // (V2.0.0) sans changer le comportement.
 export function useTransfer(providerRef: RefObject<GitProvider | null>) {
+  const runningRef = useRef(false)
   const [steps, setSteps] = useState<UploadStep[]>([])
   const [items, setItems] = useState<UploadItem[]>([])
   const [incomplete, setIncomplete] = useState(false)
-  const [fatalError, setFatalError] = useState<string | null>(null)
+  const [fatalError, setFatalError] = useState<MessageDescriptor | null>(null)
   const [result, setResult] = useState<SendResult | null>(null)
+  const [currentBatch, setCurrentBatch] = useState(1)
+  const [totalBatches, setTotalBatches] = useState(1)
 
   async function runCommit(
     destination: Destination,
@@ -21,7 +26,9 @@ export function useTransfer(providerRef: RefObject<GitProvider | null>) {
     existingPaths: Set<string> | null,
     onlyItemIds?: string[]
   ): Promise<SendResult | null> {
+    if (runningRef.current) return null
     if (!providerRef.current || !destination.repo || !destination.branch) return null
+    runningRef.current = true
     setFatalError(null)
     setIncomplete(false)
 
@@ -48,7 +55,14 @@ export function useTransfer(providerRef: RefObject<GitProvider | null>) {
           commitMessage: destination.commitMessage,
           files: filesForSend,
         },
-        { onSteps: setSteps, onItems: setItems },
+        {
+          onSteps: setSteps,
+          onItems: setItems,
+          onBatchProgress: (current: number, total: number) => {
+            setCurrentBatch(current)
+            setTotalBatches(total)
+          }
+        },
         onlyItemIds
       )
       setResult(res)
@@ -57,9 +71,11 @@ export function useTransfer(providerRef: RefObject<GitProvider | null>) {
       if (err instanceof GitDockError && err.message === 'INCOMPLETE') {
         setIncomplete(true)
       } else {
-        setFatalError(err instanceof Error ? err.message : "Échec de l'envoi.")
+        setFatalError(messageFromError(err, 'errors.transfer'))
       }
       return null
+    } finally {
+      runningRef.current = false
     }
   }
 
@@ -84,6 +100,8 @@ export function useTransfer(providerRef: RefObject<GitProvider | null>) {
   return {
     steps,
     items,
+    currentBatch,
+    totalBatches,
     incomplete,
     fatalError,
     result,

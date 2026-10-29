@@ -11,6 +11,7 @@ export interface CommitPlan {
 export interface CommitCallbacks {
   onSteps: (steps: UploadStep[]) => void
   onItems: (items: UploadItem[]) => void
+  onBatchProgress?: (currentBatch: number, totalBatches: number) => void
 }
 
 export interface PullRequestResult {
@@ -32,7 +33,7 @@ export interface GitProvider {
 }
 
 export class GitDockError extends Error {
-  constructor(message: string, public cause?: unknown, public status?: number) {
+  constructor(message: string, public cause?: unknown, public status?: number, public userMessage?: import('../i18n/message').MessageDescriptor) {
     super(message)
     this.name = 'GitDockError'
   }

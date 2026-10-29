@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { PWA_MANIFEST_DESCRIPTION, PWA_MANIFEST_LOCALE } from './src/i18n/metadata'
 
 const base = '/Treeporter-main'
 
@@ -18,7 +19,8 @@ export default defineConfig({
       manifest: {
         name: 'Treeporter',
         short_name: 'Treeporter',
-        description: "Zone de transfert de fichiers depuis l'app Fichiers de l'iPhone vers GitHub",
+        description: PWA_MANIFEST_DESCRIPTION,
+        lang: PWA_MANIFEST_LOCALE,
 
         theme_color: '#12131A',
         background_color: '#12131A',

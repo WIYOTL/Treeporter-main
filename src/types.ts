@@ -1,4 +1,6 @@
 // Types partagés de Treeporter
+import type { MessageKey } from './i18n/messages'
+import type { LocalizedMessage } from './i18n/message'
 
 export type ScreenId = 'connect' | 'dock' | 'destination' | 'preview' | 'sending' | 'result'
 
@@ -9,9 +11,11 @@ export interface DockedFile {
   file: File
   size: number
   excluded: boolean
-  excludeReason?: string
+  excludeReason?: MessageKey
   /** fichier au-delà du seuil d'avertissement (encodage base64 en mémoire, cf. README) */
   isLarge?: boolean
+  /** fichier trop volumineux pour l'API GitHub (limite : 100 Mo) */
+  isTooLarge?: boolean
   /** chemin de remplacement choisi par l'utilisateur en cas de conflit avec un fichier existant */
   renamedPath?: string
 }
@@ -24,7 +28,7 @@ export interface RepoRef {
   name: string
   fullName: string
   defaultBranch: string
-  /** Le token a-t-il les droits d'écriture (push) sur ce dépôt ? Absent = non vérifié. */
+  /** Le compte a-t-il le rôle GitHub push sur ce dépôt ? Absent = information non fournie. */
   canPush?: boolean
 }
 
@@ -40,7 +44,7 @@ export interface UploadItem {
   path: string
   size: number
   status: FileStatus
-  error?: string
+  error?: LocalizedMessage
   /** Octets déjà envoyés — utile pour les gros fichiers en cours d'upload (status 'uploading'). */
   bytesSent?: number
 }
@@ -49,7 +53,7 @@ export type UploadStepId = 'files' | 'tree' | 'commit' | 'ref'
 
 export interface UploadStep {
   id: UploadStepId
-  label: string
+  label: MessageKey
   status: FileStatus
   error?: string
 }
@@ -59,6 +63,9 @@ export interface SendResult {
   commitUrl: string
   filesSent: number
   filesFailed: number
+  batchCount: number
+  currentBatch: number
+  totalBatches: number
 }
 
 export interface Destination {

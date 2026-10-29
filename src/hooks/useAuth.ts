@@ -6,6 +6,8 @@ import { GitDockError } from '../services/gitProvider'
 import type { GitProvider } from '../services/gitProvider'
 import { saveToken, loadToken, clearToken } from '../services/tokenStore'
 import { detectTokenType, type TokenType } from '../services/tokenType'
+import { messageFromError } from '../i18n/message'
+import type { MessageDescriptor } from '../i18n/message'
 
 // Regroupe tout ce qui concerne la session GitHub : connexion, reprise automatique au
 // démarrage, type de token détecté, déconnexion. Extrait de App.tsx (V2.0.0) sans changer
@@ -15,14 +17,17 @@ export function useAuth(setScreen: (screen: ScreenId) => void) {
 
   const [demo, setDemo] = useState(false)
   const [connectLoading, setConnectLoading] = useState(false)
-  const [connectError, setConnectError] = useState<string | null>(null)
-  const [sessionError, setSessionError] = useState<string | null>(null)
+  const [connectError, setConnectError] = useState<MessageDescriptor | null>(null)
+  const [sessionError, setSessionError] = useState<MessageDescriptor | null>(null)
+  const [sessionRetryAvailable, setSessionRetryAvailable] = useState(false)
   const [sessionLoading, setSessionLoading] = useState(true)
   const [tokenType, setTokenType] = useState<TokenType | null>(null)
 
   async function handleConnect(token: string) {
     setConnectLoading(true)
     setConnectError(null)
+    setSessionError(null)
+    setSessionRetryAvailable(false)
     try {
       const client = new GitHubClient(token)
       await client.validateToken()
@@ -32,7 +37,7 @@ export function useAuth(setScreen: (screen: ScreenId) => void) {
       setScreen('dock')
       await saveToken(token)
     } catch (err) {
-      setConnectError(err instanceof Error ? err.message : 'Connexion impossible.')
+      setConnectError(messageFromError(err, 'errors.connection'))
     } finally {
       setConnectLoading(false)
     }
@@ -40,7 +45,11 @@ export function useAuth(setScreen: (screen: ScreenId) => void) {
 
   async function tryResumeSession(): Promise<boolean> {
     const stored = await loadToken()
-    if (!stored) return false
+    if (!stored) {
+      setSessionError(null)
+      setSessionRetryAvailable(false)
+      return false
+    }
     try {
       const client = new GitHubClient(stored)
       await client.validateToken()
@@ -48,16 +57,22 @@ export function useAuth(setScreen: (screen: ScreenId) => void) {
       setDemo(false)
       setTokenType(detectTokenType(stored))
       setScreen('dock')
+      setConnectError(null)
       setSessionError(null)
+      setSessionRetryAvailable(false)
       return true
     } catch (err) {
       if (err instanceof GitDockError && err.status === 401) {
-        // Token vraiment invalide/expiré côté GitHub : on l'efface.
+        // GitHub n'accepte plus le jeton enregistré : on l'efface et demande une reconnexion.
         await clearToken()
+        setConnectError(null)
+        setSessionError({ key: 'errors.savedSessionRejected' })
+        setSessionRetryAvailable(false)
       } else {
         // Erreur réseau ou autre problème passager : on garde le token enregistré
         // (il sera revalidé à la prochaine tentative) et on informe simplement l'utilisateur.
-        setSessionError("Impossible de vérifier ta session (pas de réseau ?). Ton token est conservé, réessaie.")
+        setSessionError(messageFromError(err, 'errors.sessionVerification'))
+        setSessionRetryAvailable(true)
       }
       return false
     }
@@ -65,6 +80,7 @@ export function useAuth(setScreen: (screen: ScreenId) => void) {
 
   async function handleRetrySession() {
     setConnectLoading(true)
+    setConnectError(null)
     await tryResumeSession()
     setConnectLoading(false)
   }
@@ -86,6 +102,10 @@ export function useAuth(setScreen: (screen: ScreenId) => void) {
   function handleDemo() {
     providerRef.current = new DemoClient()
     setDemo(true)
+    setTokenType(null)
+    setConnectError(null)
+    setSessionError(null)
+    setSessionRetryAvailable(false)
     setScreen('dock')
   }
 
@@ -97,6 +117,9 @@ export function useAuth(setScreen: (screen: ScreenId) => void) {
     providerRef.current = null
     setDemo(false)
     setTokenType(null)
+    setConnectError(null)
+    setSessionError(null)
+    setSessionRetryAvailable(false)
   }
 
   return {
@@ -106,6 +129,7 @@ export function useAuth(setScreen: (screen: ScreenId) => void) {
     connectLoading,
     connectError,
     sessionError,
+    sessionRetryAvailable,
     sessionLoading,
     handleConnect,
     handleDemo,

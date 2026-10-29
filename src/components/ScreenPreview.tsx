@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import type { DockedFile, Destination, ConflictResolution } from '../types'
 import { formatBytes, totalSize, joinTargetPath, resolveRenamedPath } from '../services/fileTree'
+import type { MessageKey } from '../i18n/messages'
+import { useI18n } from '../i18n/I18nProvider'
+import type { MessageDescriptor } from '../i18n/message'
 
 interface Props {
   files: DockedFile[]
@@ -10,16 +13,16 @@ interface Props {
   onSend: () => void
   existingPaths: Set<string> | null
   conflictLoading: boolean
-  conflictCheckError: string | null
+  conflictCheckError: MessageDescriptor | null
   conflictChoices: Map<string, ConflictResolution>
   onSetConflictChoice: (fileId: string, resolution: ConflictResolution) => void
   onApplyBulkConflictChoice: (resolution: ConflictResolution) => void
 }
 
-const CHOICE_LABEL: Record<ConflictResolution, string> = {
-  replace: 'Remplacer',
-  ignore: 'Ignorer',
-  rename: 'Renommer',
+const CHOICE_LABEL: Record<ConflictResolution, MessageKey> = {
+  replace: 'preview.replace',
+  ignore: 'preview.ignore',
+  rename: 'preview.rename',
 }
 
 export function ScreenPreview({
@@ -35,6 +38,7 @@ export function ScreenPreview({
   onSetConflictChoice,
   onApplyBulkConflictChoice,
 }: Props) {
+  const { locale, t, plural, formatMessage } = useI18n()
   const [showExcluded, setShowExcluded] = useState(false)
 
   const originalPath = (f: DockedFile) => joinTargetPath(destination.targetPath, f.relativePath)
@@ -52,22 +56,21 @@ export function ScreenPreview({
 
   return (
     <div>
-      <div className="h1">Aperçu</div>
+      <div className="h1">{t('preview.title')}</div>
       <p className="p-dim">
-        Vers <span className="mono-chip">{destination.repo?.fullName}</span> sur{' '}
-        <span className="mono-chip">{destination.branch?.name}</span>
-        {destination.branch?.isNew ? ' (nouvelle branche)' : ''}
+        {t('preview.destination', { repository: destination.repo?.fullName ?? '', branch: destination.branch?.name ?? '' })}
+        {destination.branch?.isNew ? ` ${t('preview.newBranch')}` : ''}
       </p>
 
       {conflictLoading && (
         <div className="banner banner-info" style={{ marginTop: 12 }}>
-          Vérification des fichiers déjà présents dans le dépôt…
+          {t('preview.checkingConflicts')}
         </div>
       )}
 
       {conflictCheckError && (
         <div className="banner banner-error" style={{ marginTop: 12 }}>
-          {conflictCheckError}
+          {formatMessage(conflictCheckError)}
         </div>
       )}
 
@@ -77,21 +80,21 @@ export function ScreenPreview({
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '18px 0 8px' }}
           >
             <div className="section-label" style={{ margin: 0 }}>
-              {conflicting.length} conflit{conflicting.length > 1 ? 's' : ''} détecté{conflicting.length > 1 ? 's' : ''}
+              {plural('preview.conflict.one', 'preview.conflict.other', conflicting.length)}
             </div>
           </div>
           <p className="p-dim" style={{ marginTop: 0 }}>
-            Ces fichiers existent déjà à cet emplacement dans le dépôt. Choisis quoi faire pour chacun (ou pour tous).
+            {t('preview.conflictInstructions')}
           </p>
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             <button className="btn btn-secondary btn-sm" onClick={() => onApplyBulkConflictChoice('replace')}>
-              Tout remplacer
+              {t('preview.replaceAll')}
             </button>
             <button className="btn btn-secondary btn-sm" onClick={() => onApplyBulkConflictChoice('ignore')}>
-              Tout ignorer
+              {t('preview.ignoreAll')}
             </button>
             <button className="btn btn-secondary btn-sm" onClick={() => onApplyBulkConflictChoice('rename')}>
-              Tout renommer
+              {t('preview.renameAll')}
             </button>
           </div>
 
@@ -110,7 +113,7 @@ export function ScreenPreview({
                       className={`btn btn-sm ${choice === option ? 'btn-primary' : 'btn-secondary'}`}
                       onClick={() => onSetConflictChoice(f.id, option)}
                     >
-                      {CHOICE_LABEL[option]}
+                      {t(CHOICE_LABEL[option])}
                     </button>
                   ))}
                 </div>
@@ -121,7 +124,7 @@ export function ScreenPreview({
       )}
 
       <div className="section-label">
-        {included.length} fichier{included.length > 1 ? 's' : ''} à envoyer · {formatBytes(sendableSize)}
+        {plural('preview.file.one', 'preview.file.other', included.length, { size: formatBytes(sendableSize, locale) })}
       </div>
       <div style={{ maxHeight: 320, overflowY: 'auto' }}>
         {included.map((f) => (
@@ -130,8 +133,8 @@ export function ScreenPreview({
             <div className="ticket-body">
               <div className="ticket-path">{finalPath(f)}</div>
               <div className="ticket-meta">
-                {formatBytes(f.size)}
-                {f.isLarge ? ' · ⚠️ volumineux, l\'envoi peut être lent' : ''}
+                {formatBytes(f.size, locale)}
+                {f.isLarge ? t('preview.largeFile') : ''}
               </div>
             </div>
           </div>
@@ -141,8 +144,7 @@ export function ScreenPreview({
       {excluded.length > 0 && (
         <>
           <button className="btn btn-ghost btn-sm" style={{ marginTop: 14 }} onClick={() => setShowExcluded((s) => !s)}>
-            {showExcluded ? 'Masquer' : 'Voir'} les {excluded.length} fichier{excluded.length > 1 ? 's' : ''} exclu
-            {excluded.length > 1 ? 's' : ''}
+            {t(showExcluded ? 'preview.hide' : 'preview.show')} {plural('preview.excluded.one', 'preview.excluded.other', excluded.length)}
           </button>
           {showExcluded && (
             <div style={{ marginTop: 8 }}>
@@ -151,10 +153,10 @@ export function ScreenPreview({
                   <div className="ticket-icon">⛔</div>
                   <div className="ticket-body">
                     <div className="ticket-path">{f.relativePath}</div>
-                    <div className="ticket-meta">{f.excludeReason}</div>
+                    <div className="ticket-meta">{f.excludeReason ? t(f.excludeReason) : ''}</div>
                   </div>
                   <button className="btn btn-ghost btn-sm" onClick={() => onToggleExclude(f.id)}>
-                    Inclure
+                    {t('preview.include')}
                   </button>
                 </div>
               ))}
@@ -165,10 +167,10 @@ export function ScreenPreview({
 
       <div className="sticky-footer">
         <button className="btn btn-primary" disabled={included.length === 0} onClick={onSend}>
-          Envoyer vers GitHub
+          {t('preview.send')}
         </button>
         <button className="btn btn-ghost" onClick={onBack}>
-          ← Retour
+          {t('common.back')}
         </button>
       </div>
     </div>

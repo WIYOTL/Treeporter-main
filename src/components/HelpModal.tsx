@@ -1,51 +1,69 @@
+import { useI18n } from '../i18n/I18nProvider'
+import type { MessageDescriptor } from '../i18n/message'
+
 interface Props {
   open: boolean
   onClose: () => void
 }
 
-const sections = [
+const sections: { key: string; values?: Record<string, string | number> }[] = [
   {
-    title: 'Connexion GitHub',
-    content:
-      'Utilisez un token GitHub disposant des droits nécessaires pour lire les dépôts et envoyer du contenu. Le token est conservé localement sur cet appareil et n’est pas transmis à un service tiers.',
+    key: 'help.github.title',
+    values: undefined,
   },
   {
-    title: 'Mode Démo',
-    content:
-      'Le mode Démo permet de parcourir le flux complet sans envoyer de fichier sur GitHub. Les dépôts, branches et commits affichés sont simulés.',
+    key: 'help.demo.title',
+    values: undefined,
   },
   {
-    title: 'Dépôt et branche',
-    content:
-      'Ajoutez vos fichiers, choisissez un dépôt accessible, puis sélectionnez une branche existante ou saisissez le nom d’une nouvelle branche. Le chemin cible permet de placer les fichiers dans un dossier du dépôt.',
+    key: 'help.destination.title',
+    values: undefined,
   },
   {
-    title: 'Gestion des conflits',
-    content:
-      'Lorsqu’un fichier existe déjà, choisissez Renommer pour conserver les deux versions, Remplacer pour mettre à jour le fichier distant, ou Ignorer pour ne pas envoyer ce fichier.',
+    key: 'help.conflicts.title',
+    values: undefined,
   },
   {
-    title: 'Pull Request',
-    content:
-      'Après un envoi vers une nouvelle branche, Treeporter propose de créer une Pull Request. Vous pouvez ensuite l’ouvrir sur GitHub pour la relire et la fusionner.',
+    key: 'help.pullRequest.title',
+    values: undefined,
   },
 ]
 
-const faq = [
+const sectionBodies: { key: string; values?: Record<string, string | number> }[] = [
   {
-    question: 'Mes fichiers sont-ils envoyés pendant la sélection ?',
-    answer:
-      'Non. L’envoi ne commence qu’après la vérification des conflits et votre confirmation depuis l’aperçu.',
+    key: 'help.github.body',
+    values: undefined,
   },
   {
-    question: 'Puis-je utiliser Treeporter sur iPhone ?',
-    answer:
-      'Oui. Ouvrez Treeporter dans Safari, puis utilisez Partager → Sur l’écran d’accueil pour l’installer comme application.',
+    key: 'help.demo.body',
+    values: undefined,
   },
   {
-    question: 'Que faire si un dépôt vide est détecté ?',
-    answer:
-      'Initialisez le dépôt sur GitHub avec un premier commit, par exemple un README, puis rechargez la liste des dépôts dans Treeporter.',
+    key: 'help.destination.body',
+    values: undefined,
+  },
+  {
+    key: 'help.conflicts.body',
+    values: undefined,
+  },
+  {
+    key: 'help.pullRequest.body',
+    values: undefined,
+  },
+]
+
+const faq: { key: string; values?: Record<string, string | number>; answerKey: string }[] = [
+  {
+    key: 'help.faq.selection.question',
+    answerKey: 'help.faq.selection.answer',
+  },
+  {
+    key: 'help.faq.iphone.question',
+    answerKey: 'help.faq.iphone.answer',
+  },
+  {
+    key: 'help.faq.empty.question',
+    answerKey: 'help.faq.empty.answer',
   },
 ]
 
@@ -53,6 +71,8 @@ export function HelpModal({ open, onClose }: Props) {
   if (!open) {
     return null
   }
+
+  const { t, formatMessage } = useI18n()
 
   return (
     <div
@@ -73,41 +93,41 @@ export function HelpModal({ open, onClose }: Props) {
               className="section-label"
               style={{ margin: 0 }}
             >
-              Guide
+              {t('help.guide')}
             </div>
 
-            <h2 id="help-title">Aide Treeporter</h2>
+            <h2 id="help-title">{t('help.title')}</h2>
           </div>
 
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={onClose}
-            aria-label="Fermer l’aide"
+            aria-label={t('help.close')}
           >
-            Fermer
+            {t('common.close')}
           </button>
         </div>
 
         <div className="help-content">
-          {sections.map((section) => (
+          {sections.map((section, index) => (
             <section
-              key={section.title}
+              key={section.key}
               className="help-section"
             >
-              <h3>{section.title}</h3>
-              <p>{section.content}</p>
+              <h3>{t(section.key as any)}</h3>
+              <p>{formatMessage({ key: sectionBodies[index].key as any })}</p>
             </section>
           ))}
 
           <section className="help-section">
-            <h3>FAQ</h3>
+            <h3>{t('help.faq')}</h3>
 
             <div className="help-faq">
               {faq.map((item) => (
-                <details key={item.question}>
-                  <summary>{item.question}</summary>
-                  <p>{item.answer}</p>
+                <details key={item.key}>
+                  <summary>{t(item.key as any)}</summary>
+                  <p>{formatMessage({ key: item.answerKey as any })}</p>
                 </details>
               ))}
             </div>

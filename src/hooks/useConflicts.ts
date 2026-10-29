@@ -3,6 +3,8 @@ import type { RefObject } from 'react'
 import type { DockedFile, Destination, ConflictResolution } from '../types'
 import type { GitProvider } from '../services/gitProvider'
 import { joinTargetPath } from '../services/fileTree'
+import { messageFromError } from '../i18n/message'
+import type { MessageDescriptor } from '../i18n/message'
 
 // Détection de conflits (fichiers déjà présents dans le dépôt/branche cible) et résolutions
 // choisies par l'utilisateur (Remplacer/Ignorer/Renommer). Extrait de App.tsx (V2.0.0) sans
@@ -10,7 +12,7 @@ import { joinTargetPath } from '../services/fileTree'
 export function useConflicts(providerRef: RefObject<GitProvider | null>) {
   const [existingPaths, setExistingPaths] = useState<Set<string> | null>(null)
   const [conflictLoading, setConflictLoading] = useState(false)
-  const [conflictCheckError, setConflictCheckError] = useState<string | null>(null)
+  const [conflictCheckError, setConflictCheckError] = useState<MessageDescriptor | null>(null)
   const [conflictChoices, setConflictChoices] = useState<Map<string, ConflictResolution>>(new Map())
 
   async function checkConflicts(destination: Destination, files: DockedFile[]) {
@@ -33,11 +35,8 @@ export function useConflicts(providerRef: RefObject<GitProvider | null>) {
       })
     } catch (err) {
       setExistingPaths(null)
-      setConflictCheckError(
-        err instanceof Error
-          ? `Impossible de vérifier les conflits (${err.message}) — les fichiers existants pourraient être écrasés sans avertissement.`
-          : 'Impossible de vérifier les conflits.'
-      )
+      const detail = messageFromError(err, 'errors.conflictCheck')
+      setConflictCheckError({ key: 'errors.conflictCheck', related: detail })
     } finally {
       setConflictLoading(false)
     }

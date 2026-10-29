@@ -1,27 +1,32 @@
 import { useEffect, useState } from 'react'
+import type { MessageDescriptor } from '../i18n/message'
 import type { RepoRef, Destination } from '../types'
 import { getTargetPathError } from '../services/fileTree'
+import { useI18n } from '../i18n/I18nProvider'
 
 interface Props {
   repos: RepoRef[]
   branches: string[]
   loadingRepos: boolean
-  repositoryLoadError: string | null
+  reposLoaded: boolean
+  repositoryLoadError: MessageDescriptor | null
   loadingBranches: boolean
   emptyRepo: boolean
-  branchError: string | null
+  branchError: MessageDescriptor | null
   destination: Destination
   onSelectRepo: (repo: RepoRef) => void
   loadRepos: () => Promise<void>
   onChange: (partial: Partial<Destination>) => void
   onBack: () => void
   onContinue: () => void
+  onRetryBranches: () => void
 }
 
 export function ScreenDestination({
   repos,
   branches,
   loadingRepos,
+  reposLoaded,
   repositoryLoadError,
   loadingBranches,
   emptyRepo,
@@ -32,7 +37,9 @@ export function ScreenDestination({
   onChange,
   onBack,
   onContinue,
+  onRetryBranches,
 }: Props) {
+  const { t, formatMessage } = useI18n()
   const [repoQuery, setRepoQuery] = useState('')
   const [newBranchMode, setNewBranchMode] = useState(false)
   const [newBranchName, setNewBranchName] = useState('')
@@ -68,28 +75,24 @@ export function ScreenDestination({
 
   return (
     <div>
-      <div className="h1">Destination</div>
+      <div className="h1">{t('destination.title')}</div>
 
-      <p className="p-dim">
-        Choisis le dépôt, la branche et l'emplacement cible.
-      </p>
+      <p className="p-dim">{t('destination.instructions')}</p>
 
-      <div className="section-label">Dépôt</div>
+      <div className="section-label">{t('destination.repository')}</div>
 
       {loadingRepos ? (
-        <div className="p-dim">
-          Chargement des dépôts…
-        </div>
+        <div className="p-dim">{t('destination.loadingRepositories')}</div>
       ) : repositoryLoadError ? (
         <div
           className="banner banner-error"
           style={{ marginBottom: 12 }}
         >
           <div>
-            Impossible de charger les dépôts.
+            {t('destination.repositoryLoadFailed')}
           </div>
 
-          <div>{repositoryLoadError}</div>
+          {formatMessage(repositoryLoadError)}
 
           <button
             className="btn btn-secondary btn-sm"
@@ -101,7 +104,7 @@ export function ScreenDestination({
               void loadRepos()
             }}
           >
-            Réessayer
+            {t('common.retry')}
           </button>
         </div>
       ) : (
@@ -111,7 +114,7 @@ export function ScreenDestination({
             style={{ marginBottom: 10 }}
           >
             <input
-              placeholder="Rechercher un dépôt…"
+              placeholder={t('destination.searchRepository')}
               value={repoQuery}
               onChange={(event) =>
                 setRepoQuery(event.target.value)
@@ -145,9 +148,9 @@ export function ScreenDestination({
                   </div>
 
                   <div className="select-row-sub">
-                    branche par défaut : {repo.defaultBranch}
+                    {t('destination.defaultBranch', { branch: repo.defaultBranch })}
                     {repo.canPush === false
-                      ? ' · ⚠️ lecture seule pour ce token'
+                      ? t('destination.readOnly')
                       : ''}
                   </div>
                 </div>
@@ -160,7 +163,9 @@ export function ScreenDestination({
 
             {filteredRepos.length === 0 && (
               <div className="p-dim">
-                Aucun dépôt trouvé.
+                {repoQuery.length > 0
+                  ? t('destination.noSearchResults')
+                  : t('destination.noRepositories')}
               </div>
             )}
           </div>
@@ -173,40 +178,42 @@ export function ScreenDestination({
             className="banner banner-error"
             style={{ marginBottom: 12 }}
           >
-            Ce token n'a pas les droits d'écriture sur{' '}
-            <strong>{destination.repo.fullName}</strong> — impossible
-            de continuer avec ce dépôt. Choisis-en un autre, ou
-            utilise un token avec l'accès « Contents : Read and
-            write » (ou le scope « repo » pour un token classique)
-            sur celui-ci.
+            {t('destination.noWriteAccess', { repository: destination.repo.fullName })}
           </div>
         )}
 
       {destination.repo && (
         <>
-          <div className="section-label">Branche</div>
+          <div className="section-label">{t('destination.branch')}</div>
 
           {loadingBranches ? (
-            <div className="p-dim">
-              Chargement des branches…
-            </div>
+            <div className="p-dim">{t('destination.loadingBranches')}</div>
           ) : emptyRepo ? (
             <div
               className="banner banner-info"
               style={{ marginBottom: 12 }}
             >
-              Ce dépôt est vide : il ne possède encore aucune
-              branche ni aucun commit. Initialise-le sur GitHub avec
-              un premier commit, par exemple un README ou un autre
-              fichier, puis recharge Treeporter.
+              {t('destination.emptyRepository')}
             </div>
           ) : branchError ? (
             <div
               className="banner banner-error"
               style={{ marginBottom: 12 }}
             >
-              Impossible de charger les branches de ce dépôt.{' '}
-              {branchError}
+              {t('destination.branchLoadFailed')}{' '}
+              {formatMessage(branchError)}
+              <button
+                className="btn btn-secondary btn-sm"
+                style={{
+                  display: 'block',
+                  marginTop: 10,
+                }}
+                onClick={() => {
+                  void onRetryBranches()
+                }}
+              >
+                {t('common.retry')}
+              </button>
             </div>
           ) : (
             <>
@@ -217,7 +224,7 @@ export function ScreenDestination({
                     !newBranchMode &&
                     destination.branch?.name === branchName
                       ? 'is-selected'
-                      : ''
+                    : ''
                   }`}
                   style={{ width: '100%' }}
                   onClick={() => {
@@ -249,7 +256,7 @@ export function ScreenDestination({
                 onClick={() => setNewBranchMode(true)}
               >
                 <div className="select-row-title">
-                  + Nouvelle branche
+                  {t('destination.newBranch')}
                 </div>
               </button>
 
@@ -259,7 +266,7 @@ export function ScreenDestination({
                   style={{ marginTop: 8 }}
                 >
                   <input
-                    placeholder="ex. depuis-iphone"
+                    placeholder={t('destination.newBranchPlaceholder')}
                     value={newBranchName}
                     onChange={(event) => {
                       const branchName = event.target.value
@@ -276,8 +283,7 @@ export function ScreenDestination({
                   />
 
                   <div className="field-hint">
-                    Créée depuis{' '}
-                    {destination.repo.defaultBranch}.
+                    {t('destination.branchCreatedFrom', { branch: destination.repo.defaultBranch })}
                   </div>
                 </div>
               )}
@@ -285,12 +291,12 @@ export function ScreenDestination({
           )}
 
           <div className="section-label">
-            Emplacement dans le dépôt
+            {t('destination.targetPath')}
           </div>
 
           <div className="field">
             <input
-              placeholder="dossier/optionnel (racine si vide)"
+              placeholder={t('destination.targetPathPlaceholder')}
               value={destination.targetPath}
               onChange={(event) =>
                 onChange({
@@ -300,8 +306,7 @@ export function ScreenDestination({
             />
 
             <div className="field-hint">
-              Les fichiers seront placés sous ce chemin,
-              arborescence conservée.
+              {t('destination.targetPathHint')}
             </div>
 
             {targetPathError && (
@@ -309,16 +314,13 @@ export function ScreenDestination({
                 className="field-hint"
                 style={{ color: 'var(--red)' }}
               >
-                Chemin cible invalide : {targetPathError}. Utilise
-                un chemin relatif valide, par exemple
-                « uploads/images », ou laisse le champ vide pour la
-                racine.
+                {t('destination.invalidTargetPath', { reason: targetPathError })}
               </div>
             )}
           </div>
 
           <div className="section-label">
-            Message de commit
+            {t('destination.commitMessage')}
           </div>
 
           <div className="field">
@@ -340,14 +342,14 @@ export function ScreenDestination({
           disabled={!canContinue}
           onClick={onContinue}
         >
-          Voir l'aperçu
+          {t('destination.preview')}
         </button>
 
         <button
           className="btn btn-ghost"
           onClick={onBack}
         >
-          ← Retour
+          {t('common.back')}
         </button>
       </div>
     </div>

@@ -1,14 +1,14 @@
 // Persistance locale du token GitHub, pour éviter d'avoir à le recoller à chaque
-// ouverture de l'app. Le token ne quitte jamais l'appareil : il n'est écrit que
-// dans le stockage local du navigateur, jamais envoyé ailleurs qu'à api.github.com.
+// ouverture de l'app. Le token est stocké dans les stockages du navigateur et
+// envoyé directement à api.github.com dans les requêtes authentifiées.
 //
 // V1.2 : IndexedDB seul s'est révélé peu fiable sur iOS en usage PWA (bugs WebKit
 // documentés — échec à la première ouverture, perte de connexion à la base après
 // mise en arrière-plan). On garde IndexedDB en stockage principal, mais on ajoute
 // localStorage en secours redondant : plus simple, sans transaction, donc moins
 // sujet à ce type de panne. Le token n'est ni plus ni moins exposé dans un cas que
-// dans l'autre (les deux sont réservés à l'origine du site, comme expliqué dans le
-// README) — c'est un choix de fiabilité, pas de sécurité.
+// dans l'autre (les deux sont réservés à l'origine du site) — c'est un choix de
+// fiabilité, pas une protection contre un script malveillant exécuté sur cette origine.
 
 const DB_NAME = 'treeport-store'
 const STORE_NAME = 'kv'
@@ -45,11 +45,13 @@ function readLocalStorage(): string | null {
   }
 }
 
-function writeLocalStorage(token: string): void {
+function writeLocalStorage(token: string): boolean {
   try {
     window.localStorage.setItem(LOCAL_STORAGE_KEY, token)
+    return true
   } catch {
     // Quota dépassé ou navigation privée : pas bloquant, IndexedDB reste tenté à côté.
+    return false
   }
 }
 
@@ -62,9 +64,10 @@ function clearLocalStorage(): void {
 }
 
 export async function saveToken(token: string): Promise<void> {
-  // Écrit dans les deux stockages en parallèle : chacun peut échouer indépendamment
-  // sans empêcher l'autre de réussir.
-  writeLocalStorage(token)
+  // Écrit dans les deux stockages : d'abord localStorage (plus fiable),
+  // puis IndexedDB (stockage principal). Si localStorage échoue, on tente
+  // quand même IndexedDB pour avoir au moins un stockage de secours.
+  const localStorageOk = writeLocalStorage(token)
   try {
     const db = await openDbWithRetry()
     await new Promise<void>((resolve, reject) => {
@@ -75,25 +78,44 @@ export async function saveToken(token: string): Promise<void> {
     })
     db.close()
   } catch {
-    // IndexedDB indisponible : le secours localStorage écrit plus haut suffit.
+    // IndexedDB indisponible : si localStorage a réussi, on a quand même
+    // une sauvegarde. Sinon, aucune des deux méthodes n'a fonctionné.
+    if (!localStorageOk) {
+      console.warn('Treeporter: Failed to save token to both IndexedDB and localStorage')
+    }
   }
 }
 
 export async function loadToken(): Promise<string | null> {
+  let indexedDBToken: string | null = null
+  let localStorageToken: string | null = null
+
   try {
     const db = await openDbWithRetry()
-    const token = await new Promise<string | null>((resolve, reject) => {
+    indexedDBToken = await new Promise<string | null>((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readonly')
       const req = tx.objectStore(STORE_NAME).get(TOKEN_KEY)
       req.onsuccess = () => resolve((req.result as string) ?? null)
       req.onerror = () => reject(req.error)
     })
     db.close()
-    if (token) return token
   } catch {
-    // IndexedDB indisponible ou vide : on retombe sur le secours ci-dessous.
+    // IndexedDB indisponible
   }
-  return readLocalStorage()
+
+  localStorageToken = readLocalStorage()
+
+  // Si IndexedDB a un token, on le retourne (stockage principal)
+  if (indexedDBToken) {
+    // Si localStorage n'a pas le même token, on le synchronise
+    if (localStorageToken !== indexedDBToken) {
+      writeLocalStorage(indexedDBToken)
+    }
+    return indexedDBToken
+  }
+
+  // Sinon, on retourne ce que localStorage a (secours)
+  return localStorageToken
 }
 
 export async function clearToken(): Promise<void> {

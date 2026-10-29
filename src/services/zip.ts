@@ -1,10 +1,14 @@
 import { unzipSync } from 'fflate'
 import type { DockedFile } from '../types'
-import { filesToDocked } from './fileTree'
+import { createDockedFile, InvalidPathError } from './fileTree'
+import { MessageError } from '../i18n/message'
 
-// Extraction d'une archive .zip en fichiers "dockés", en réutilisant filesToDocked pour
-// garder exactement la même normalisation (NFC, exclusions par défaut, seuil "volumineux")
-// que la sélection de fichiers/dossiers classique — une seule logique, deux points d'entrée.
+// Extraction d'une archive .zip en fichiers "dockés", en réutilisant la même
+// normalisation (NFC, exclusions par défaut, seuil "volumineux") que la
+// sélection de fichiers/dossiers classique — une seule logique, deux points d'entrée.
+// Le chemin relatif est passé explicitement à createDockedFile pour ne pas
+// dépendre de la propriété native webkitRelativePath (readonly sur certains
+// navigateurs, notamment Safari/iOS).
 export async function zipToDocked(zipFile: File): Promise<DockedFile[]> {
   const buffer = new Uint8Array(await zipFile.arrayBuffer())
 
@@ -12,24 +16,34 @@ export async function zipToDocked(zipFile: File): Promise<DockedFile[]> {
   try {
     entries = unzipSync(buffer)
   } catch {
-    throw new Error(`Impossible de lire "${zipFile.name}" — ce n'est peut-être pas une archive .zip valide.`)
+    throw new MessageError({ key: 'dock.zipUnreadable', values: { filename: zipFile.name } })
   }
 
-  const files: File[] = []
+  const files: DockedFile[] = []
   for (const [path, data] of Object.entries(entries)) {
     // Les entrées de dossier se terminent par "/" et n'ont pas de contenu à envoyer.
     if (path.endsWith('/')) continue
-    const name = path.split('/').pop() || path
-    const file = new File([new Uint8Array(data)], name)
-    // Simule webkitRelativePath pour que filesToDocked conserve l'arborescence de l'archive,
-    // exactement comme pour une sélection de dossier via webkitdirectory.
-    Object.defineProperty(file, 'webkitRelativePath', { value: path })
-    files.push(file)
+
+    try {
+      files.push(createDockedFile(
+        new File([new Uint8Array(data)], path.split('/').pop() || path),
+        path
+      ))
+    } catch (error) {
+      if (error instanceof InvalidPathError) {
+        throw new MessageError({
+          key: 'errors.invalidArchivePath',
+          values: { path: error.path },
+          related: { key: error.reason },
+        })
+      }
+      throw error
+    }
   }
 
   if (files.length === 0) {
-    throw new Error(`"${zipFile.name}" ne contient aucun fichier exploitable.`)
+    throw new MessageError({ key: 'dock.zipEmpty', values: { filename: zipFile.name } })
   }
 
-  return filesToDocked(files)
+  return files
 }

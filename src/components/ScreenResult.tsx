@@ -1,5 +1,7 @@
 import type { SendResult, Destination } from '../types'
 import type { HistoryEntry } from '../services/history'
+import type { MessageDescriptor } from '../i18n/message'
+import { useI18n } from '../i18n/I18nProvider'
 
 interface Props {
   result: SendResult
@@ -9,7 +11,7 @@ interface Props {
   previousHistory: HistoryEntry[]
   onCreatePullRequest: () => void
   prLoading: boolean
-  prError: string | null
+  prError: MessageDescriptor | null
   prUrl: string | null
   branchWasCreated: boolean
 }
@@ -26,6 +28,7 @@ export function ScreenResult({
   prUrl,
   branchWasCreated,
 }: Props) {
+  const { t, plural, formatMessage, formatDate } = useI18n()
   return (
     <div
       style={{
@@ -35,16 +38,12 @@ export function ScreenResult({
     >
       <div className="result-badge">✓</div>
 
-      <div className="h1">Commit créé</div>
+      <div className="h1">{t('result.commitCreated')}</div>
 
       <p className="p-dim">
-        {result.filesSent} fichier
-        {result.filesSent > 1 ? 's' : ''} envoyé
-        {result.filesSent > 1 ? 's' : ''} vers{' '}
-        <span className="mono-chip">
-          {destination.repo?.fullName}
-        </span>{' '}
-        ({destination.branch?.name})
+        {plural('result.filesSent.one', 'result.filesSent.other', result.filesSent, {
+          repository: destination.repo?.fullName ?? '', branch: destination.branch?.name ?? '',
+        })}
       </p>
 
       <div
@@ -54,7 +53,7 @@ export function ScreenResult({
           margin: '20px 0',
         }}
       >
-        <div className="ticket-meta">SHA du commit</div>
+        <div className="ticket-meta">{t('result.commitSha')}</div>
 
         <div
           className="ticket-path"
@@ -75,8 +74,7 @@ export function ScreenResult({
             marginBottom: 16,
           }}
         >
-          Mode démo : ce commit est simulé, rien n'a été envoyé
-          sur GitHub.
+          {t('result.demoCommit')}
         </div>
       )}
 
@@ -88,7 +86,7 @@ export function ScreenResult({
           className="btn btn-primary"
           style={{ marginBottom: 10 }}
         >
-          Voir le commit sur GitHub
+          {t('result.viewCommit')}
         </a>
       )}
 
@@ -101,8 +99,8 @@ export function ScreenResult({
           disabled={prLoading}
         >
           {prLoading
-            ? 'Création de la Pull Request…'
-            : 'Créer une Pull Request'}
+            ? t('result.createPullRequestLoading')
+            : t('result.createPullRequest')}
         </button>
       )}
 
@@ -114,7 +112,7 @@ export function ScreenResult({
             marginBottom: 10,
           }}
         >
-          {prError}
+          {formatMessage(prError)}
         </div>
       )}
 
@@ -126,7 +124,7 @@ export function ScreenResult({
           className="btn btn-secondary"
           style={{ marginBottom: 10 }}
         >
-          Voir la Pull Request
+          {t('result.viewPullRequest')}
         </a>
       )}
 
@@ -135,7 +133,7 @@ export function ScreenResult({
         className="btn btn-secondary"
         onClick={onNewTransfer}
       >
-        Nouvel envoi
+        {t('result.newTransfer')}
       </button>
 
       {previousHistory.length > 0 && (
@@ -147,7 +145,7 @@ export function ScreenResult({
               marginTop: 24,
             }}
           >
-            Envois précédents
+            {t('result.previousTransfers')}
           </div>
 
           <div style={{ textAlign: 'left' }}>
@@ -162,7 +160,7 @@ export function ScreenResult({
                   </div>
 
                   <div className="history-entry-branch">
-                    branche{' '}
+                    {t('result.branch')}{' '}
                     <span className="mono-chip">
                       {entry.branchName}
                     </span>
@@ -170,17 +168,16 @@ export function ScreenResult({
 
                   <div className="history-entry-meta">
                     <span>
-                      {entry.filesSent} fichier
-                      {entry.filesSent > 1 ? 's' : ''}
+                      {plural('common.count.file.one', 'common.count.file.other', entry.filesSent)}
                     </span>
 
                     <span>
-                      {new Date(entry.at).toLocaleString('fr-FR')}
+                      {formatDate(entry.at)}
                     </span>
 
                     {entry.demo && (
                       <span className="demo-badge">
-                        Démo
+                        {t('result.demo')}
                       </span>
                     )}
                   </div>
@@ -193,7 +190,7 @@ export function ScreenResult({
                     rel="noreferrer"
                     className="btn btn-ghost btn-sm"
                   >
-                    Commit
+                    {t('result.commitLink')}
                   </a>
                 )}
               </div>
