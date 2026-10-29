@@ -1,3 +1,5 @@
+import { LanguageSwitcher } from './LanguageSwitcher'
+
 interface Props {
   onCredits: () => void
   onHelp: () => void
@@ -10,7 +12,7 @@ export function AppFooter({
   return (
     <footer className="app-footer">
       <div className="app-footer-meta">
-        <span>Treeporter v2.0.0</span>
+        <span>Treeporter v2.1.0</span>
         <span>Développé par Wiyotl</span>
         <span>© 2026 Wiyotl. Tous droits réservés.</span>
       </div>
@@ -61,6 +63,8 @@ export function AppFooter({
         >
           DEV Community
         </a>
+
+        <LanguageSwitcher />
       </nav>
     </footer>
   )
