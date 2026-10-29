@@ -284,6 +284,8 @@ The demo intentionally simulates the failure of about one in six files on the fi
 ### Changed
 - **Write access check** for the selected repository performed before branch selection (based on permissions returned by GitHub), to avoid discovering a read-only token only after the fact.
 - **Diagnosis of the 401 error with fine-grained tokens**: not fixed (see note below), but a specific, actionable error message is now displayed.
+- **New Pages**: "Credits Pages" and "Help Pages" with a questions'section added in the footer.
+- **New Links**: Link to the GitHub account, Instagram account, DEV Community account of the developer.
 
 ## What's New in V1.2
 
