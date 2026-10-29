@@ -393,7 +393,10 @@ export default function App() {
                   {t(TOKEN_TYPE_BADGE[auth.tokenType])}
                 </span>
               )}
-              <LanguageSwitcher />
+              <div className="language-switcher-container">
+                <span className="language-switcher-label">{t('language.switcherLabel')} :</span>
+                <LanguageSwitcher />
+              </div>
 
               <button
                 type="button"

@@ -11,7 +11,7 @@ export function LanguageSwitcher() {
     >
       <button
         type="button"
-        className="app-footer-link language-switcher-option"
+        className={`language-switcher-option ${locale === 'fr' ? 'language-active' : ''}`}
         aria-label={t('language.french')}
         aria-pressed={locale === 'fr'}
         onClick={() => setLocale('fr')}
@@ -20,7 +20,7 @@ export function LanguageSwitcher() {
       </button>
       <button
         type="button"
-        className="app-footer-link language-switcher-option"
+        className={`language-switcher-option ${locale === 'en' ? 'language-active' : ''}`}
         aria-label={t('language.english')}
         aria-pressed={locale === 'en'}
         onClick={() => setLocale('en')}
