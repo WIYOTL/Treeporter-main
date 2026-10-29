@@ -32,6 +32,7 @@ import { ScreenResult } from './components/ScreenResult'
 import { AppFooter } from './components/AppFooter'
 import { CreditsModal } from './components/CreditsModal'
 import { HelpModal } from './components/HelpModal'
+import { LanguageSwitcher } from './components/LanguageSwitcher'
 import { useI18n } from './i18n/I18nProvider'
 import { messageFromError } from './i18n/message'
 import type { MessageDescriptor } from './i18n/message'
@@ -63,7 +64,7 @@ function derivePullRequestTitle(
 }
 
 export default function App() {
-  const { t } = useI18n()
+  const { t, locale, setLocale } = useI18n()
   const [screen, setScreen] = useState<ScreenId>('connect')
   const [historyEntries, setHistoryEntries] = useState<
     HistoryEntry[]
@@ -392,6 +393,7 @@ export default function App() {
                   {t(TOKEN_TYPE_BADGE[auth.tokenType])}
                 </span>
               )}
+              <LanguageSwitcher />
 
               <button
                 type="button"

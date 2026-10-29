@@ -1,4 +1,3 @@
-import { LanguageSwitcher } from './LanguageSwitcher'
 
 interface Props {
   onCredits: () => void
@@ -63,8 +62,6 @@ export function AppFooter({
         >
           DEV Community
         </a>
-
-        <LanguageSwitcher />
       </nav>
     </footer>
   )
