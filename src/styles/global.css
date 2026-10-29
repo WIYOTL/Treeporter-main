@@ -246,8 +246,7 @@ select {
   overflow-y: auto;
 }
 
-.credits-modal {
-  width: min(100%, 440px);
+.credits-modal {  width: min(100%, 440px);
 }
 
 .credits-modal-header {
@@ -779,34 +778,36 @@ a.btn {
 }
 
 .language-switcher-container {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   margin-left: 16px;
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--border);
+  border-radius: 8px;
 }
 
 .language-switcher-label {
   font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-dim);
+  font-weight: 700;
+  color: var(--text);
 }
 
 .language-switcher {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .language-switcher-option {
-  padding: 6px 12px;
-  font-weight: 600;
-  border-radius: 4px;
+  padding: 7px 14px;
+  font-weight: 700;
+  border-radius: 6px;
   border: 1px solid var(--border);
-  color: var(--text-dim);
-  background: transparent;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .language-switcher-option.language-active {
@@ -816,6 +817,6 @@ a.btn {
 }
 
 .language-switcher-option:hover:not(.language-active) {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.2);
   color: var(--text);
 }
