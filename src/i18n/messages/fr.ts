@@ -199,6 +199,9 @@ export const fr = {
   'footer.copyright': '© 2026 Wiyotl. Tous droits réservés.',
   'footer.credits': 'Crédits',
   'footer.help': 'Aide',
+  'footer.github': 'GitHub',
+  'footer.instagram': 'Instagram',
+  'footer.dev': 'DEV Community',
 
   'errors.connection': 'Connexion impossible.',
   'errors.sessionVerification': 'Impossible de vérifier ta session. Vérifie ta connexion. Ton token est conservé; réessaie.',

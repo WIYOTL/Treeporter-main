@@ -1,5 +1,5 @@
-
 import { LanguageSwitcher } from './LanguageSwitcher'
+import { useI18n } from '../i18n/I18nProvider'
 
 interface Props {
   onCredits: () => void
@@ -10,6 +10,8 @@ export function AppFooter({
   onCredits,
   onHelp,
 }: Props) {
+  const { t } = useI18n()
+
   return (
     <footer className="app-footer">
       <div className="app-footer-meta">
@@ -31,7 +33,7 @@ export function AppFooter({
           className="app-footer-link"
           onClick={onCredits}
         >
-          Crédits
+          {t('footer.credits')}
         </button>
 
         <button
@@ -39,7 +41,7 @@ export function AppFooter({
           className="app-footer-link"
           onClick={onHelp}
         >
-          Aide
+          {t('footer.help')}
         </button>
 
         <a
@@ -48,7 +50,7 @@ export function AppFooter({
           target="_blank"
           rel="noreferrer"
         >
-          GitHub
+          {t('footer.github')}
         </a>
 
         <a
@@ -57,7 +59,7 @@ export function AppFooter({
           target="_blank"
           rel="noreferrer"
         >
-          Instagram
+          {t('footer.instagram')}
         </a>
 
         <a
@@ -66,7 +68,7 @@ export function AppFooter({
           target="_blank"
           rel="noreferrer"
         >
-          DEV Community
+          {t('footer.dev')}
         </a>
       </nav>
     </footer>

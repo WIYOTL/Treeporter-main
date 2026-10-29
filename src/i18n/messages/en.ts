@@ -201,6 +201,9 @@ const en: Record<MessageKey, string> = {
   'footer.copyright': '© 2026 Wiyotl. All rights reserved.',
   'footer.credits': 'Credits',
   'footer.help': 'Help',
+  'footer.github': 'GitHub',
+  'footer.instagram': 'Instagram',
+  'footer.dev': 'DEV Community',
 
   'errors.connection': 'Could not connect.',
   'errors.sessionVerification': 'Could not verify your session. Check your connection. Your token is still saved; try again.',
