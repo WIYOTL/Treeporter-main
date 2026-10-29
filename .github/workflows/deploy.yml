@@ -4,6 +4,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branche à déployer"
+        required: true
+        default: "main"
+        type: choice
+        options:
+          - main
+          - release/v2.1.0
 
 permissions:
   contents: read
