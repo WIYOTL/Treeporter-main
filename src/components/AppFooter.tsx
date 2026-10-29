@@ -1,4 +1,6 @@
 
+import { LanguageSwitcher } from './LanguageSwitcher'
+
 interface Props {
   onCredits: () => void
   onHelp: () => void
@@ -20,6 +22,10 @@ export function AppFooter({
         className="app-footer-links"
         aria-label="Pied de page"
       >
+        <div className="language-switcher-container">
+          <LanguageSwitcher />
+        </div>
+
         <button
           type="button"
           className="app-footer-link"
