@@ -33,9 +33,9 @@ jobs:
           node-version: 20
       - run: npm install
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/checkout@v4
         with:
-          path: dist
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref }}
 
   deploy:
     needs: build
