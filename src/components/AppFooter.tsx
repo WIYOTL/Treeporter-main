@@ -16,8 +16,8 @@ export function AppFooter({
     <footer className="app-footer">
       <div className="app-footer-meta">
         <span>Treeporter v2.1.0</span>
-        <span>Développé par Wiyotl</span>
-        <span>© 2026 Wiyotl. Tous droits réservés.</span>
+        <span>{t('footer.developedBy')}</span>
+        <span>{t('footer.copyright')}</span>
       </div>
 
       <nav
